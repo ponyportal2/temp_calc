@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "s21_the_calc.h": "c",
+        "unistd.h": "c",
+        "string.h": "c",
+        "2.h": "c",
+        "vaslib.h": "c"
+    }
+}
