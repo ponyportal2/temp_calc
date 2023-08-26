@@ -68,6 +68,9 @@ void Calculate(view_to_calc_struct view_to_calc,
   if (view_to_calc.unlock == true) forceOneInst = false;
   if (forceOneInst == false && view_to_calc.unlock == false) {
     forceOneInst = true;
+    if (view_to_calc.calculation_type == calc_kCalculateWithX) {
+      replaceX(view_to_calc.calc_input, view_to_calc.x_variable);
+    }
     char lExpression[MAX_STRING_SIZE] = {0};
     strcpy(lExpression, view_to_calc.calc_input);
     int err = 0;

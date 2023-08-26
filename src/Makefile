@@ -14,15 +14,19 @@ endif
 
 CFLAGS=-Wall -Werror -Wextra
 GFLAGS=-fprofile-arcs -ftest-coverage
-SOURCES= *.c *.h ./my_libs/*.h ./my_libs/*.c ./extras/*.h ./icons/*.h
+SOURCES= ./my_libs/*.c view.c controller.c logic_model.c
+HEADERS= ./my_libs/*.h view.h controller.h logic_model.h
 SOURCESGCOV= s21_the_calc.c ./my_libs/*.c test_check.c
+MEME_ON=-DCALC_MEME
+MEME_OFF=
 # -----------------
 
 all: styleforce build
 
-build: clean view.c logic_model.c view.h logic_model.h ./my_libs/vaslib.c ./my_libs/vaslib.h controller.h controller.c
-	-mv c.wav c.doc
-	g++ ./my_libs/*.c view.c logic_model.c controller.c libraylib_big_sur.a -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
+build: clean ${SOURCES} ${HEADERS}
+	# -mv c.wav c.doc
+	-mv c.doc c.wav 
+	g++ libraylib_big_sur.a ${SOURCES} -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc ${MEME_OFF} -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
 	-mkdir ../build/
 	mv SmartCalc ../build/SmartCalc
 	-cp a.wav c.doc c.wav dark.rgs readme.html a.jpg ../build/

@@ -4,10 +4,10 @@
 #include <string.h>
 #include <time.h>
 
+#include "controller.h"
 #include "raylib.h"
 #define RAYGUI_IMPLEMENTATION
 // #include "extras/gui_textbox_extended.h"
-#include "controller.h"
 #include "raygui.h"
 
 #define XBOX_DEFAULT_TEXT \
@@ -21,10 +21,10 @@
 
 void DeleteWordFromInput(char* inputStr);
 void ClearCalcDotArray(calc_dot* input, int elements);
-void equalsPressed(char* input_box_text, char* x_box_text,
+void EqualsPressed(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
-                   int meme_mode, calc_dot* graph_dots);
+                   int meme_mode, Sound input_sound, calc_dot* graph_dots);
 void cleanUpSlashN(char* inputStr);
-void SoundAndMemeLogic(bool meme_mode, int* quake_counter);
+void SoundAndMemeLogic(bool meme_mode, Sound input_sound, int* quake_counter);
 void drawNinePixelsGrid(calc_dot position, Color color);
 #endif  // CALC_VIEW_H_

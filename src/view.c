@@ -1,6 +1,5 @@
 #include "view.h"
 
-#include "controller.h"
 #include "my_libs/vaslib.h"
 #include "style_dark.h"
 
@@ -11,10 +10,9 @@
 #endif  // CALC_MEME
 
 // ёбля волшебных существ:
-const long long int calc_kGraphUninit =
+const long long int calc_kViewGraphUninit =
     -1527219354888013218690209950634698640695279350620336683.0;
-const int calc_kMaxStringSize = 16384;
-const int calc_kGraphDotsCount = 20000;
+const int calc_kViewGraphDotsCount = 20000;
 const int calc_kScreenWidth = 1280;
 const int calc_kScreenHeight = 720;
 
@@ -36,15 +34,16 @@ int main() {
   bool show_message_box = false;
   bool meme_mode = CALC_MEME;
   srand(time(NULL));
-  calc_dot graph_dots[calc_kGraphDotsCount];
-  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount);
+  calc_dot graph_dots[calc_kViewGraphDotsCount];
+  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   Color background_color_value = CLITERAL(Color){33, 33, 33, 33};
-  int q = 0;
+  int q = 0;  // used for quakes in meme mode
   int quake_counter = 0;
   SetTargetFPS(60);
   GuiLoadStyleDark();
   GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
   InitAudioDevice();
+  Sound fx_wav = LoadSound("a.wav");
   char input_box_text[calc_kMaxStringSize] = {0};
   char x_box_text[calc_kMaxStringSize] = {0};
   char solver_box_text[calc_kMaxStringSize] = {0};
@@ -84,8 +83,8 @@ int main() {
     GuiGroupBox(
         (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - margin) + q,
                     calc_kScreenHeight - (calc_kScreenHeight - margin) + q,
-                    calc_kScreenWidth - margin * 2 + q,
-                    calc_kScreenHeight - margin * 3 + q},
+                    calc_kScreenWidth - margin * 2,
+                    calc_kScreenHeight - margin * 3},
         "SmartCalc");
     GuiSetState(STATE_NORMAL);
     // Input box:
@@ -151,20 +150,22 @@ int main() {
             (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - (margin)) + q,
                         calc_kScreenHeight - margin * 4 + q, margin, margin},
             "=")) {
-      equalsPressed(input_box_text, x_box_text, solver_box_text,
-                    output_box_text, &quake_counter, meme_mode, graph_dots);
+      EqualsPressed(input_box_text, x_box_text, solver_box_text,
+                    output_box_text, &quake_counter, meme_mode, fx_wav,
+                    graph_dots);
     }
     if (IsKeyPressed(KEY_ENTER)) {
-      equalsPressed(input_box_text, x_box_text, solver_box_text,
-                    output_box_text, &quake_counter, meme_mode, graph_dots);
+      EqualsPressed(input_box_text, x_box_text, solver_box_text,
+                    output_box_text, &quake_counter, meme_mode, fx_wav,
+                    graph_dots);
     }
     // Status bar:
     GuiStatusBar(
         (Rectangle){0, calc_kScreenHeight - margin, calc_kScreenWidth, margin},
         "SmartCalc");
     // Draw whole graph:
-    for (int i = 0; i < calc_kGraphDotsCount; i++) {
-      if (graph_dots[i].x != calc_kGraphUninit) {
+    for (int i = 0; i < calc_kViewGraphDotsCount; i++) {
+      if (graph_dots[i].x != calc_kViewGraphUninit) {
         DrawPixel(
             (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
             (long double)calc_kScreenHeight / 2 - 30 -
@@ -190,71 +191,72 @@ int main() {
     }
     EndDrawing();
   }
+  UnloadSound(fx_wav);
   CloseAudioDevice();
   CloseWindow();
   return 0;
 }
 
-void equalsPressed(char* input_box_text, char* x_box_text,
+void EqualsPressed(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
-                   int meme_mode, calc_dot* graph_dots) {
+                   int meme_mode, Sound input_sound, calc_dot* graph_dots) {
   bool x_input_error = 0;
   char result_text[calc_kMaxStringSize] = {0};
-  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount);
-  CalculationType calculation_type;
+  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
   if (strcmp(x_box_text, XBOX_DEFAULT_TEXT) != 0 && strlen(x_box_text) > 0 &&
       strpbrk(input_box_text, "Xx") && !strpbrk(x_box_text, "Xx")) {
-    calculation_type = calc_kCalculateWithX;
+    view_to_calc.calculation_type = calc_kCalculateWithX;
     printf("\nb\n");
   } else if (strcmp(solver_box_text, SOLVER_DEFAULT_TEXT) != 0 &&
              strlen(solver_box_text) > 0 && strpbrk(input_box_text, "Xx")) {
-    calculation_type = calc_kSolve;
+    view_to_calc.calculation_type = calc_kSolve;
   } else if (strcmp(input_box_text, INPUTBOX_DEFAULT_TEXT) != 0 &&
              strlen(input_box_text) > 0) {
-    calculation_type = calc_kCalculate;
+    view_to_calc.calculation_type = calc_kCalculate;
   }
-  UnlockCalculate();
-  if (calculation_type == calc_kCalculate) {
-    view_to_calc.calc_input =
-        (char*)calloc(2048, sizeof(char));                    // to define later
-    calc_to_view.answer = (char*)calloc(2048, sizeof(char));  // to define later
+  ControllerUnlockCalculate();
+  if (view_to_calc.calculation_type == calc_kCalculate) {
+    view_to_calc.calc_input = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    calc_to_view.answer = (char*)calloc(calc_kMaxStringSize, sizeof(char));
     strcpy(view_to_calc.calc_input, input_box_text);
-    Communicate(view_to_calc, calc_to_view);
+    ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_text, calc_to_view.answer);
-    // strcpy(input_box_text, output_text);
-    SoundAndMemeLogic(CALC_MEME, quake_counter);
-  } else if (calculation_type == calc_kCalculateWithX) {
-    // char input_box_text_copy[calc_kMaxStringSize] = {0};
-    // strcpy(input_box_text_copy, input_box_text);
-    // replaceX(input_box_text_copy, x_box_text);
-    // calc_to_view = Calculate(view_to_calc);
-    // strcpy(output_text, input_box_text);
-    // strcat(output_text, " = ");
-    // strcat(output_text, calc_to_view.answer);
-    // strcpy(input_box_text, output_text);
-    // SoundAndMemeLogic(CALC_MEME, quake_counter);
-  } else if (calculation_type == calc_kSolve) {
+  } else if (view_to_calc.calculation_type == calc_kCalculateWithX) {
+    view_to_calc.calc_input = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    calc_to_view.answer = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    view_to_calc.x_variable = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    strcpy(view_to_calc.calc_input, input_box_text);
+    strcpy(view_to_calc.x_variable, x_box_text);
+    ControllerCommunicate(view_to_calc, calc_to_view);
+    strcpy(output_text, calc_to_view.answer);
+    // ADD GRAPH DRAWING HERE LATER
+  } else if (view_to_calc.calculation_type == calc_kSolve) {
     // TO DO
   }
+  SoundAndMemeLogic(CALC_MEME, input_sound, quake_counter);
   if (view_to_calc.calc_input) free(view_to_calc.calc_input);
+  if (view_to_calc.x_variable) free(view_to_calc.x_variable);
+  if (view_to_calc.solver_variable) free(view_to_calc.solver_variable);
   if (calc_to_view.answer) free(calc_to_view.answer);
-  UnlockCalculate();
+  ControllerUnlockCalculate();
 }
 
-void SoundAndMemeLogic(bool meme_mode, int* quake_counter) {
-  Sound fx_wav = LoadSound("a.wav");
-  if (meme_mode) fx_wav = LoadSound("c.wav");
-  if (meme_mode) *quake_counter = 240;
-  PlaySound(fx_wav);
-  UnloadSound(fx_wav);  // ??
+void SoundAndMemeLogic(bool meme_mode, Sound input_sound, int* quake_counter) {
+  if (meme_mode) {
+    input_sound = LoadSound("c.wav");
+    *quake_counter = 240;
+  } else if (!meme_mode) {
+    input_sound = LoadSound("a.wav");
+  }
+  PlaySound(input_sound);
 }
 
 void ClearCalcDotArray(calc_dot* input, int n) {
   for (int i = 0; i < n; ++i) {
-    input[i].x = calc_kGraphUninit;
-    input[i].y = calc_kGraphUninit;
+    input[i].x = calc_kViewGraphUninit;
+    input[i].y = calc_kViewGraphUninit;
   }
 }
 
