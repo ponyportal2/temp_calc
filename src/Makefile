@@ -16,6 +16,7 @@ CFLAGS=-Wall -Werror -Wextra
 GFLAGS=-fprofile-arcs -ftest-coverage
 SOURCES= ./my_libs/*.c view.c controller.c logic_model.c
 HEADERS= ./my_libs/*.h view.h controller.h logic_model.h
+CHECKFILE= calcTest.check
 SOURCESGCOVNOTESTCHECK = ./my_libs/*.c controller.c logic_model.c
 SOURCESGCOV= ./my_libs/*.c controller.c logic_model.c test_check.c
 HEADERSGCOV= ./my_libs/*.h controller.h logic_model.h
@@ -77,12 +78,12 @@ dvi:
 	open readme.html
 
 test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV}
-	checkmk clean_mode=1 calcTest.check > test_check.c
+	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
 	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
 	./test_check
 
 gcov_report:
-	checkmk clean_mode=1 calcTest.check > test_check.c
+	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
 	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
 	./test_check > test.log
 	lcov -t "test" -o test.info -c -d .

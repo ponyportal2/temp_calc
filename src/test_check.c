@@ -175,38 +175,6 @@ testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Division by zero is impossible", outputStr);
 
-// TESTX6
-
-}
-END_TEST
-
-START_TEST(calcx6)
-{
-
-char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
-char x[MAX_STRING_SIZE] = "0";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
-
-// TESTX7
-
-}
-END_TEST
-
-START_TEST(calcx7)
-{
-
-char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
-char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("-inf", outputStr);
-
 // TESTX8
 
 }
@@ -544,22 +512,6 @@ testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("210.0", outputStr);
 
-// TESTX29
-
-}
-END_TEST
-
-START_TEST(calcx29)
-{
-
-char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
-char x[MAX_STRING_SIZE] = "0.59";
-char outputStr[MAX_STRING_SIZE] = {0};
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("10.0", outputStr);
-
 // TESTX30
 
 }
@@ -671,6 +623,54 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("1.0", outputStr); // maybe incorrect
+
+// TESTX_E_29
+
+}
+END_TEST
+
+START_TEST(calcx_E_29)
+{
+
+char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
+char x[MAX_STRING_SIZE] = "0.59";
+char outputStr[MAX_STRING_SIZE] = {0};
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("10.0", outputStr);
+
+// TESTX_E_7
+
+}
+END_TEST
+
+START_TEST(calcx_E_7)
+{
+
+char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
+char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("-inf", outputStr);
+
+// TESTX_E_6
+
+}
+END_TEST
+
+START_TEST(calcx_E_6)
+{
+
+char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
+char x[MAX_STRING_SIZE] = "0";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
 }
 END_TEST
 
@@ -696,8 +696,6 @@ int main(void)
     tcase_add_test(tc2_1, calcx3);
     tcase_add_test(tc2_1, calcx4);
     tcase_add_test(tc2_1, calcx5);
-    tcase_add_test(tc2_1, calcx6);
-    tcase_add_test(tc2_1, calcx7);
     tcase_add_test(tc2_1, calcx8);
     tcase_add_test(tc2_1, calcx9);
     tcase_add_test(tc2_1, calcx10);
@@ -719,7 +717,6 @@ int main(void)
     tcase_add_test(tc2_1, calcx26);
     tcase_add_test(tc2_1, calcx27);
     tcase_add_test(tc2_1, calcx28);
-    tcase_add_test(tc2_1, calcx29);
     tcase_add_test(tc2_1, calcx30);
     tcase_add_test(tc2_1, calcx31);
     tcase_add_test(tc2_1, calcx32);
@@ -727,6 +724,9 @@ int main(void)
     tcase_add_test(tc2_1, calcx34);
     tcase_add_test(tc2_1, calcx35);
     tcase_add_test(tc2_1, calcx36);
+    tcase_add_test(tc2_1, calcx_E_29);
+    tcase_add_test(tc2_1, calcx_E_7);
+    tcase_add_test(tc2_1, calcx_E_6);
 
     srunner_add_suite(sr, s2);
 

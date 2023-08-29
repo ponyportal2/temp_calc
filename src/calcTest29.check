@@ -1,0 +1,17 @@
+#include "logic_model.h"
+
+#define EPSFOUR 0.0001
+
+#suite SmartCalc
+
+// TESTX_E_29
+
+#test calcx_E_29
+
+char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
+char x[MAX_STRING_SIZE] = "0.59";
+char outputStr[MAX_STRING_SIZE] = {0};
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("10.0", outputStr);

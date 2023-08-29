@@ -67,7 +67,7 @@ void threeWaySplit(char *inputStr, char left[MAX_STRING_SIZE],
                    char middle[MAX_STRING_SIZE], char right[MAX_STRING_SIZE],
                    int start, int end);
 int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
-int IsBracketsCountValid(char *inputStr);
+int isBracketsCountValid(char *inputStr);
 void transformUnariesAndMod(char *inputStr);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
 long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
@@ -81,7 +81,7 @@ void cleanUpSpaces(char *inputStr);
 int operatorCount(char *inputStr);
 void recombine(char *inputStr, char *left, char *middle, char *right);
 bool isJustANumber(char *inputStr);
-void AddOuterBrackets(char *inputStr);
+void addOuterBrackets(char *inputStr);
 bool doesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);

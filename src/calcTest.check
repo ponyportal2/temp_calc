@@ -130,30 +130,6 @@ testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Division by zero is impossible", outputStr);
 
-// TESTX6
-
-#test calcx6
-
-char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
-char x[MAX_STRING_SIZE] = "0";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
-
-// TESTX7
-
-#test calcx7
-
-char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
-char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("-inf", outputStr);
-
 // TESTX8
 
 #test calcx8
@@ -407,18 +383,6 @@ testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("210.0", outputStr);
 
-// TESTX29
-
-#test calcx29
-
-char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
-char x[MAX_STRING_SIZE] = "0.59";
-char outputStr[MAX_STRING_SIZE] = {0};
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("10.0", outputStr);
-
 // TESTX30
 
 #test calcx30
@@ -502,3 +466,39 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("1.0", outputStr); // maybe incorrect
+
+// TESTX_E_29
+
+#test calcx_E_29
+
+char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
+char x[MAX_STRING_SIZE] = "0.59";
+char outputStr[MAX_STRING_SIZE] = {0};
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("10.0", outputStr);
+
+// TESTX_E_7
+
+#test calcx_E_7
+
+char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
+char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("-inf", outputStr);
+
+// TESTX_E_6
+
+#test calcx_E_6
+
+char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
+char x[MAX_STRING_SIZE] = "0";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
