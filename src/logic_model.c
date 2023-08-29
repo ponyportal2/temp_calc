@@ -68,11 +68,26 @@ const char *calc_kOperPassInvalidSymbols = "Invalid symbols encountered";
 //   return returnValue;
 // }
 
+void testCalculate(char *input, char *output, int dummy) {
+  calc_to_view_struct calc_to_view;
+  view_to_calc_struct view_to_calc;
+  view_to_calc.calc_input = (char *)calloc(calc_kMaxStringSize, sizeof(char));
+  calc_to_view.answer = (char *)calloc(calc_kMaxStringSize, sizeof(char));
+  strcpy(view_to_calc.calc_input, input);
+  view_to_calc.calculation_type = calc_kCalculate;
+  view_to_calc.unlock = false;
+  ControllerCommunicate(view_to_calc, calc_to_view);
+  strcpy(output, calc_to_view.answer);
+  if (view_to_calc.calc_input) free(view_to_calc.calc_input);
+  if (calc_to_view.answer) free(calc_to_view.answer);
+  ControllerUnlockCalculate();
+}
+
 // Main calculation:
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view) {
   static bool forceOneInst = false;
-  char *invalidCharList = "`<>?|;}{[]±§!@#$=";
+  char *invalidCharList = "`<>?|;}{[]±§!@$=";
   if (view_to_calc.unlock == true) forceOneInst = false;
   if (forceOneInst == false && view_to_calc.unlock == false) {
     forceOneInst = true;
@@ -95,14 +110,17 @@ void Calculate(view_to_calc_struct view_to_calc,
       bool allCalculationsFinished = false;
       bool whileBreak = false;
       while (allCalculationsFinished == false && bracketsError == 0 &&
-             calculationCount < MAX_CALCULATIONS && whileBreak == false &&
-             err == 0) {
+             whileBreak == false && err == 0) {
+        char prev_l_expression[MAX_STRING_SIZE] = {0};
+        strcpy(prev_l_expression, lExpression);
+        printf("\n{%s}\n", lExpression);
         char left[MAX_STRING_SIZE] = {0};
         char middle[MAX_STRING_SIZE] = {0};
         char right[MAX_STRING_SIZE] = {0};
         bracketsError = findDeepestBrackets(lExpression, &start, &end);
         if (bracketsError == 0) {
           threeWaySplit(lExpression, left, middle, right, start, end);
+          printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
           err = parseAndApplyOperators(middle);
           if (err == 0) {
             recombine(lExpression, left, middle, right);
@@ -123,6 +141,7 @@ void Calculate(view_to_calc_struct view_to_calc,
           }
         }
         calculationCount++;
+        if (strcmp(prev_l_expression, lExpression) == 0) whileBreak = true;
       }
     } else if (IsBracketsCountValid(lExpression) != 1) {
       err = OPER_PASS_BRACKETS_COUNT_INVALID;
@@ -356,8 +375,9 @@ int checkLeftBracketOper(char *leftStr, int leftBracketIdx) {
 void DeleteBrackets(char *left, char *right) {
   if (strlen(left) > 0) left[strlen(left) - 1] = '\0';
   if (strlen(right) > 0) {
-    char *temp_ptr = right + 1;
-    strcpy(right, temp_ptr);
+    char tempStr[calc_kMaxStringSize] = {0};
+    strcpy(tempStr, (char *)right + 1);
+    strcpy(right, tempStr);
   }
 }
 
@@ -472,40 +492,32 @@ long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd) {
   return getLRDigits(inputMid, operatorPos, digitsEnd, false);
 }
 
-long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
-                        bool isLeft) {
-  char *toMatch = "0123456789#. ";
-  char finalLeftDigit[MAX_STRING_SIZE] = {0};
+double getLRDigits(char *input, int oper_position, int *digits_end,
+                   bool is_left) {
+  char *to_match = "0123456789#. inf nan NAN";
+  char final_number[MAX_STRING_SIZE] = {0};
   int i = 0;
-  if (isLeft) i = operatorPos - 1;
-  if (!isLeft) i = operatorPos + 1;
-  int j = 0;
-  int minusesCount = 0;
-  bool whileBreak = false;
-  // using just this instead of transformUnariesAndMod:
-  if (isLeft && inputMid[0] == '-') inputMid[0] = '#';
-  while (whileBreak == false) {
-    if (inputMid[i] == '#') {
-      finalLeftDigit[j] = '-';
-      j++;
+  if (is_left) i = oper_position - 1;
+  if (!is_left) i = oper_position + 1;
+  bool loop_break = false;
+  while (loop_break == false) {
+    if (input[i] != '#') {
+      char temp_str[2] = {input[i], '\0'};
+      strcat(final_number, temp_str);
     } else {
-      finalLeftDigit[j] = inputMid[i];
-      j++;
+      strcat(final_number, "-");
     }
-    if (isLeft) i--;
-    if (!isLeft) i++;
-    // Break conditions:
-    if (isLeft && i < 0) whileBreak = true;
-    if (!isLeft && i == (int)strlen(inputMid)) whileBreak = true;
-    if (inputMid[i] == '\0') whileBreak = true;
-    if (charMatch(inputMid[i], toMatch) != true) whileBreak = true;
+
+    if (is_left) i--;
+    if (!is_left) i++;
+
+    // printf("final number:%s\n", final_number);
+    if (i < 0 || i == (int)strlen(input) || input[i] == '\0') loop_break = true;
+    if (charMatch(input[i], to_match) != true) loop_break = true;
   }
-  if (minusesCount > 1) {
-    printf("A LOT OF MINUSES!");
-  }
-  *digitsEnd = i;
-  if (isLeft) reverseString(finalLeftDigit);
-  return strtold(finalLeftDigit, NULL);
+  *digits_end = i;
+  if (is_left) reverseString(final_number);
+  return strtod(final_number, NULL);
 }
 
 int parseAndApplyOperators(char *midStr) {
@@ -558,43 +570,44 @@ int operatorPass(char *inputMid, char opChar) {
   bool whileBreak = false;
   while (inputMid[i] != '\0' && whileBreak == false) {
     if (inputMid[i] == opChar) {
-      switch (opChar) {
-        case '*':
-          calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) *
-                       (long double)getRightDigits(inputMid, i, &resultEnd);
-          sprintfHelper(sprintfResult, calcResult);
-          break;
-        case '/':
-          if (getRightDigits(inputMid, i, &resultEnd) != 0) {
-            calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) /
+      if ((getLeftDigits(inputMid, i, &resultStart))) switch (opChar) {
+          case '*':
+            calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) *
                          (long double)getRightDigits(inputMid, i, &resultEnd);
             sprintfHelper(sprintfResult, calcResult);
-          } else {
-            err = OPER_PASS_DIVBYZERO;
-            whileBreak = true;
-          }
-          break;
-        case '+':
-          calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) +
-                       (long double)getRightDigits(inputMid, i, &resultEnd);
-          sprintfHelper(sprintfResult, calcResult);
-          break;
-        case '-':
-          calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) -
-                       (long double)getRightDigits(inputMid, i, &resultEnd);
-          sprintfHelper(sprintfResult, calcResult);
-          break;
-        case '^':
-          calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
-                            getRightDigits(inputMid, i, &resultEnd));
-          sprintfHelper(sprintfResult, calcResult);
-          break;
-        case '%':
-          calcResult = fmodl(getLeftDigits(inputMid, i, &resultStart),
-                             getRightDigits(inputMid, i, &resultEnd));
-          sprintfHelper(sprintfResult, calcResult);
-          break;
-      }
+            break;
+          case '/':
+            if (getRightDigits(inputMid, i, &resultEnd) != 0) {
+              calcResult =
+                  (long double)getLeftDigits(inputMid, i, &resultStart) /
+                  (long double)getRightDigits(inputMid, i, &resultEnd);
+              sprintfHelper(sprintfResult, calcResult);
+            } else {
+              err = OPER_PASS_DIVBYZERO;
+              whileBreak = true;
+            }
+            break;
+          case '+':
+            calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) +
+                         (long double)getRightDigits(inputMid, i, &resultEnd);
+            sprintfHelper(sprintfResult, calcResult);
+            break;
+          case '-':
+            calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) -
+                         (long double)getRightDigits(inputMid, i, &resultEnd);
+            sprintfHelper(sprintfResult, calcResult);
+            break;
+          case '^':
+            calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
+                              getRightDigits(inputMid, i, &resultEnd));
+            sprintfHelper(sprintfResult, calcResult);
+            break;
+          case '%':
+            calcResult = fmodl(getLeftDigits(inputMid, i, &resultStart),
+                               getRightDigits(inputMid, i, &resultEnd));
+            sprintfHelper(sprintfResult, calcResult);
+            break;
+        }
       // using just this instead of transformUnariesAndMod:
       if (sprintfResult[0] == '-') sprintfResult[0] = '#';
       // changeAllUnaries(resultGcvt); // probably shouldn't be here

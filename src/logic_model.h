@@ -49,6 +49,8 @@
 
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
+void testCalculate(char *input, char *output, int dummy);
+
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view);
 
@@ -88,8 +90,8 @@ void wholeStrBracketDeletion(char *inputStr, int start, int end);
 int findCharCount(char *inputStr, char *toFind);
 int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 int unfoldBrackets(char *inputStr, int startIn, int endIn);
-long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
-                        bool isLeft);
+double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
+                   bool isLeft);
 long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd);
 long double getLeftDigits(char *inputMid, int operatorPos, int *digitsEnd);
 int operatorPassLoop(char *inputMid, char *opChar);

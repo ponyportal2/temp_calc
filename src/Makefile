@@ -16,7 +16,9 @@ CFLAGS=-Wall -Werror -Wextra
 GFLAGS=-fprofile-arcs -ftest-coverage
 SOURCES= ./my_libs/*.c view.c controller.c logic_model.c
 HEADERS= ./my_libs/*.h view.h controller.h logic_model.h
-SOURCESGCOV= s21_the_calc.c ./my_libs/*.c test_check.c
+SOURCESGCOVNOTESTCHECK = ./my_libs/*.c controller.c logic_model.c
+SOURCESGCOV= ./my_libs/*.c controller.c logic_model.c test_check.c
+HEADERSGCOV= ./my_libs/*.h controller.h logic_model.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
 # -----------------
@@ -74,9 +76,9 @@ dist: clean
 dvi:
 	open readme.html
 
-test:
+test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV}
 	checkmk clean_mode=1 calcTest.check > test_check.c
-	gcc $(SYSFLAG) ${SOURCES} test_check.c $(LFLAGS) $(GFLAGS) -g -o test_check
+	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
 	./test_check
 
 gcov_report:

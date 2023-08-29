@@ -17,7 +17,7 @@ START_TEST(calc1)
 
 char expression[MAX_STRING_SIZE] = "5+5"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("10",NULL), strtold(outputStr,NULL), EPS);
 
@@ -31,7 +31,7 @@ START_TEST(calc2)
 
 char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+-54343.43434*-6+-3/-4++5++7)))))"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
 
@@ -45,7 +45,7 @@ START_TEST(calc3)
 
 char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+-5678.1234*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)+6)"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 
@@ -59,7 +59,7 @@ START_TEST(calc4)
 
 char expression[MAX_STRING_SIZE] = "1000000^99"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("inf", outputStr);
 
@@ -73,7 +73,7 @@ START_TEST(calc5)
 
 char expression[MAX_STRING_SIZE] = "3.09mod"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
@@ -87,7 +87,7 @@ START_TEST(calc6)
 
 char expression[MAX_STRING_SIZE] = "-(-5+aboba)"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Input is probably invalid or NaN encountered", outputStr);
 
@@ -107,7 +107,7 @@ char expression[MAX_STRING_SIZE] = "5+x";
 char x[MAX_STRING_SIZE] = "5+5"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("15",NULL), strtold(outputStr,NULL), EPS);
 
@@ -123,7 +123,7 @@ char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+x*-6+-3/-4++5++7)))))
 char x[MAX_STRING_SIZE] = "-54343.43434"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
 
@@ -139,7 +139,7 @@ char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5
 char x[MAX_STRING_SIZE] = "-5678.1234";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 
@@ -155,7 +155,7 @@ char expression[MAX_STRING_SIZE] = "45/x";
 char x[MAX_STRING_SIZE] = "9";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
@@ -171,7 +171,7 @@ char expression[MAX_STRING_SIZE] = "45/x";
 char x[MAX_STRING_SIZE] = "0";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Division by zero is impossible", outputStr);
 
@@ -187,7 +187,7 @@ char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
 char x[MAX_STRING_SIZE] = "0";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
 
@@ -203,7 +203,7 @@ char expression[MAX_STRING_SIZE] = "-0.68*x*x*x*x-0.1*x*x*x-0.01*x*x-0.0*x*x*x";
 char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("-inf", outputStr);
 
@@ -219,7 +219,7 @@ char expression[MAX_STRING_SIZE] = "x*x";
 char x[MAX_STRING_SIZE] = "1000000000000000000000000000000000000000000000";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("inf", outputStr);
 
@@ -235,7 +235,7 @@ char expression[MAX_STRING_SIZE] = "x^3 + x/2 + 56mod4";
 char x[MAX_STRING_SIZE] = "9.4342345235235";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("844.409",NULL), strtold(outputStr,NULL), EPSFOUR);
 
@@ -251,7 +251,7 @@ char expression[MAX_STRING_SIZE] = "x^3 + x/2 + 56%4";
 char x[MAX_STRING_SIZE] = "9.4342345235235";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("844.409",NULL), strtold(outputStr,NULL), EPSFOUR);
 
@@ -267,7 +267,7 @@ char expression[MAX_STRING_SIZE] = "x^2+x^3*(-4 * x)-100";
 char x[MAX_STRING_SIZE] = "-1000000";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-3999999999999000000069632.0",NULL), strtold(outputStr,NULL), EPS);
 
@@ -283,7 +283,7 @@ char expression[MAX_STRING_SIZE] = "x^1.1";
 char x[MAX_STRING_SIZE] = "-1000000";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 // printf("\n>>%s<<\n",outputStr);
 
 ck_assert_str_eq("NAN encountered during calculation", outputStr);
@@ -300,7 +300,7 @@ char expression[MAX_STRING_SIZE] = "x^2-sqrt(x^x)";
 char x[MAX_STRING_SIZE] = "64";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-6277101735386680763835789423207666416102355444464034512896.0",NULL), strtold(outputStr,NULL), EPS);
 
@@ -316,7 +316,7 @@ char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(x)))))";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.4794255386", outputStr);
 
@@ -332,7 +332,7 @@ char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(x))))))";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.6496369391", outputStr);
 
@@ -348,7 +348,7 @@ char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(x^sqrt(sqrt((5)*(
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Brackets count is invalid", outputStr);
 
@@ -364,7 +364,7 @@ char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(x^sqrt(sqrt((5)*(
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.5609747685", outputStr);
 
@@ -380,7 +380,7 @@ char expression[MAX_STRING_SIZE] = "sin(sqrt(x^((-21)^(1/4))))";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
@@ -396,7 +396,7 @@ char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(0.35469507876))))
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.5609747685", outputStr);
 
@@ -412,7 +412,7 @@ char expression[MAX_STRING_SIZE] = "=cos(acos(tan(atan(sin(sqrt(0.35469507876)))
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Invalid symbols encountered", outputStr);
 
@@ -428,7 +428,7 @@ char expression[MAX_STRING_SIZE] = "5";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
@@ -444,7 +444,7 @@ char expression[MAX_STRING_SIZE] = "5";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
@@ -460,7 +460,7 @@ char expression[MAX_STRING_SIZE] = "asin(cos(x))";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("1.0708",NULL), strtold(outputStr,NULL), EPSFOUR);
 
@@ -476,7 +476,7 @@ char expression[MAX_STRING_SIZE] = "asin(cos(sqrt(-x)))";
 char x[MAX_STRING_SIZE] = "0.5";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
@@ -492,7 +492,7 @@ char expression[MAX_STRING_SIZE] = "log(x)";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("-0.2291479884", outputStr);
 
@@ -508,7 +508,7 @@ char expression[MAX_STRING_SIZE] = "ln(x)";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("-0.5276327421", outputStr);
 
@@ -524,7 +524,7 @@ char expression[MAX_STRING_SIZE] = "=fsdfsdfsdf";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Invalid symbols encountered", outputStr);
 
@@ -540,7 +540,7 @@ char expression[MAX_STRING_SIZE] = "5(6)(7)";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("210.0", outputStr);
 
@@ -552,11 +552,11 @@ END_TEST
 START_TEST(calcx29)
 {
 
-char expression[MAX_STRING_SIZE] = "+5-+5--2*+5/+1";
+char expression[MAX_STRING_SIZE] = "(+5)-(+5)-(-2)*(+5)/(+1)";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("10.0", outputStr);
 
@@ -572,7 +572,7 @@ char expression[MAX_STRING_SIZE] = "-5-+5--2*+5/+1";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.0", outputStr);
 
@@ -588,7 +588,7 @@ char expression[MAX_STRING_SIZE] = "-5^-5";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("-0.00032", outputStr);
 
@@ -604,7 +604,7 @@ char expression[MAX_STRING_SIZE] = "+5^+5";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("3125.0", outputStr);
 
@@ -620,7 +620,7 @@ char expression[MAX_STRING_SIZE] = "+5%+4";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("1.0", outputStr);
 
@@ -636,7 +636,7 @@ char expression[MAX_STRING_SIZE] = "-5%-4";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("-1.0", outputStr);
 
@@ -652,7 +652,7 @@ char expression[MAX_STRING_SIZE] = "-(-5)%-4";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("1.0", outputStr); // maybe incorrect
 
@@ -668,50 +668,9 @@ char expression[MAX_STRING_SIZE] = "--5%-4";
 char x[MAX_STRING_SIZE] = "0.59";
 char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
-Calculate(expression, outputStr, 0);
+testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("1.0", outputStr); // maybe incorrect
-
-// ------
-// SOLVER
-// ------
-
-// TESTSOLVER1
-
-}
-END_TEST
-
-START_TEST(solver1)
-{
-
-char inputBoxText[MAX_STRING_SIZE] = "x^2";
-char solverBoxText[MAX_STRING_SIZE] = "64";
-char possibleAnswer[MAX_STRING_SIZE] = {0};
-
-if (!binarySearchSolver(inputBoxText, solverBoxText, 0, possibleAnswer)) {
-    binarySearchSolver(inputBoxText, solverBoxText, 1, possibleAnswer);
-}
-
-ck_assert_str_eq("8.0", possibleAnswer);
-
-// TESTSOLVER2
-
-}
-END_TEST
-
-START_TEST(solver2)
-{
-
-char inputBoxText[MAX_STRING_SIZE] = "x^2-sqrt(x^x)";
-char solverBoxText[MAX_STRING_SIZE] = "64";
-char possibleAnswer[MAX_STRING_SIZE] = {0};
-
-if (!binarySearchSolver(inputBoxText, solverBoxText, 0, possibleAnswer)) {
-  binarySearchSolver(inputBoxText, solverBoxText, 1, possibleAnswer);
-}
-
-ck_assert_str_eq("-9223372036854774783.5", possibleAnswer); // answer may be incorrect
-
 }
 END_TEST
 
@@ -768,8 +727,6 @@ int main(void)
     tcase_add_test(tc2_1, calcx34);
     tcase_add_test(tc2_1, calcx35);
     tcase_add_test(tc2_1, calcx36);
-    tcase_add_test(tc2_1, solver1);
-    tcase_add_test(tc2_1, solver2);
 
     srunner_add_suite(sr, s2);
 
