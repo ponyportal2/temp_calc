@@ -47,13 +47,6 @@
 #define BR_OPER_LOG 9
 #define BR_OPER_LN 10
 
-// CALCULATION ERROR MESSAGES:
-#define MES_OPER_PASS_DIVBYZERO "Division by zero is impossible"
-#define MES_OPER_PASS_NAN "NAN encountered during calculation"
-#define MES_OPER_PASS_TIMEOUT "Input is probably invalid or NaN encountered"
-#define MES_OPER_PASS_BRACKETS_COUNT_INVALID "Brackets count is invalid"
-#define MES_OPER_PASS_INVALID_SYMBOLS "Invalid symbols encountered"
-
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
 void Calculate(view_to_calc_struct view_to_calc,
@@ -90,7 +83,7 @@ void AddOuterBrackets(char *inputStr);
 bool doesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);
-void pureLRBracketDeletion(char *left, char *right);
+void DeleteBrackets(char *left, char *right);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);
 int findCharCount(char *inputStr, char *toFind);
 int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);

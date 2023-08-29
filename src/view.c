@@ -1,5 +1,9 @@
 #include "view.h"
 
+#include <stdbool.h>
+#include <string.h>
+#include <time.h>
+
 #include "my_libs/vaslib.h"
 #include "style_dark.h"
 
@@ -16,7 +20,7 @@ const int calc_kViewGraphDotsCount = 20000;
 const int calc_kScreenWidth = 1280;
 const int calc_kScreenHeight = 720;
 
-const char* calc_kXboxDefaultText =
+const char* calc_kXBoxDefaultText =
     "Write your x here, SHIFT + BACKSPACE to clear this field";
 const char* calc_kInputBoxDefaultText =
     "Write your expression here, OPTION(Alt) + BACKSPACE to clear this field,"
@@ -50,7 +54,7 @@ int main() {
   char output_box_text[calc_kMaxStringSize] = {0};
   // Copying default text to text fields
   strcpy(input_box_text, calc_kInputBoxDefaultText);
-  strcpy(x_box_text, calc_kXboxDefaultText);
+  strcpy(x_box_text, calc_kXBoxDefaultText);
   strcpy(solver_box_text, calc_kSolverDefaultText);
   strcpy(output_box_text, calc_kOutputDefaultText);
   // Text box edit modes:
@@ -205,18 +209,18 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
   ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
-  if (strcmp(x_box_text, XBOX_DEFAULT_TEXT) != 0 && strlen(x_box_text) > 0 &&
-      strpbrk(input_box_text, "Xx") && !strpbrk(x_box_text, "Xx")) {
+  if (strcmp(x_box_text, calc_kXBoxDefaultText) != 0 &&
+      strlen(x_box_text) > 0 && strpbrk(input_box_text, "Xx") &&
+      !strpbrk(x_box_text, "Xx")) {
     view_to_calc.calculation_type = calc_kCalculateWithX;
     printf("\nb\n");
-  } else if (strcmp(solver_box_text, SOLVER_DEFAULT_TEXT) != 0 &&
+  } else if (strcmp(solver_box_text, calc_kSolverDefaultText) != 0 &&
              strlen(solver_box_text) > 0 && strpbrk(input_box_text, "Xx")) {
     view_to_calc.calculation_type = calc_kSolve;
-  } else if (strcmp(input_box_text, INPUTBOX_DEFAULT_TEXT) != 0 &&
+  } else if (strcmp(input_box_text, calc_kInputBoxDefaultText) != 0 &&
              strlen(input_box_text) > 0) {
     view_to_calc.calculation_type = calc_kCalculate;
   }
-  ControllerUnlockCalculate();
   if (view_to_calc.calculation_type == calc_kCalculate) {
     view_to_calc.calc_input = (char*)calloc(calc_kMaxStringSize, sizeof(char));
     calc_to_view.answer = (char*)calloc(calc_kMaxStringSize, sizeof(char));
@@ -261,14 +265,15 @@ void ClearCalcDotArray(calc_dot* input, int n) {
 }
 
 void DeleteWordFromInput(char* input_str) {
+  char* stop_characters = " +-*/^%()";
   if (strlen(input_str) > 0) {
     int i = strlen(input_str) - 1;
     bool loop_break = false;
-    if (charMatch(input_str[i], " +-*/^%()")) {
+    if (charMatch(input_str[i], stop_characters)) {
       input_str[i] = '\0';
     } else {
       while (i > -1 && loop_break == false) {
-        if (!charMatch(input_str[i], " +-*/^%()")) {
+        if (!charMatch(input_str[i], stop_characters)) {
           input_str[i] = '\0';
         } else {
           loop_break = true;

@@ -1,5 +1,13 @@
 #include "logic_model.h"
 
+// Calculation error messages:
+const char *calc_kOperPassDivisionByZero = "Division by zero is impossible";
+const char *calc_kOperPassNan = "NAN encountered during calculation";
+const char *calc_kOperPassTimeout =
+    "Input is probably invalid or NaN encountered";
+const char *calc_kOperPassBracketsCountInvaild = "Brackets count is invalid";
+const char *calc_kOperPassInvalidSymbols = "Invalid symbols encountered";
+
 // Binary search solver:
 // bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
 //                         char *possibleAnswer) {
@@ -126,7 +134,7 @@ void Calculate(view_to_calc_struct view_to_calc,
     // =============
     if (calculationCount > MAX_CALCULATIONS - 2) err = OPER_PASS_TIMEOUT;
     if (err == 0) {
-      if (lExpression[0] == '~') lExpression[0] = '-';
+      if (lExpression[0] == '#') lExpression[0] = '-';
       if (strtold(lExpression, NULL) > INFI) {
         strcpy(calc_to_view.answer, "inf");
       } else if (strtold(lExpression, NULL) < (INFI * -1)) {
@@ -137,15 +145,15 @@ void Calculate(view_to_calc_struct view_to_calc,
         cleanUpTrailingZeroes(calc_to_view.answer);
       }
     } else if (err == OPER_PASS_DIVBYZERO) {
-      strcpy(calc_to_view.answer, MES_OPER_PASS_DIVBYZERO);
+      strcpy(calc_to_view.answer, calc_kOperPassDivisionByZero);
     } else if (err == OPER_PASS_NAN) {
-      strcpy(calc_to_view.answer, MES_OPER_PASS_NAN);
+      strcpy(calc_to_view.answer, calc_kOperPassNan);
     } else if (err == OPER_PASS_TIMEOUT) {
-      strcpy(calc_to_view.answer, MES_OPER_PASS_TIMEOUT);
+      strcpy(calc_to_view.answer, calc_kOperPassTimeout);
     } else if (err == OPER_PASS_BRACKETS_COUNT_INVALID) {
-      strcpy(calc_to_view.answer, MES_OPER_PASS_BRACKETS_COUNT_INVALID);
+      strcpy(calc_to_view.answer, calc_kOperPassBracketsCountInvaild);
     } else if (err == OPER_PASS_INVALID_SYMBOLS) {
-      strcpy(calc_to_view.answer, MES_OPER_PASS_INVALID_SYMBOLS);
+      strcpy(calc_to_view.answer, calc_kOperPassInvalidSymbols);
     }
   }
 }
@@ -201,7 +209,7 @@ void replaceX(char *inputStr, char *userX) {
   int i = 0;
   char userXLocal[MAX_STRING_SIZE] = {0};
   strcpy(userXLocal, userX);
-  if (userXLocal[0] == '-') userXLocal[0] = '~';
+  if (userXLocal[0] == '-') userXLocal[0] = '#';
   while (inputStr[i] != '\0') {
     if (inputStr[i] == 'x' || inputStr[i] == 'X') {
       char tempStr[MAX_STRING_SIZE] = {0};
@@ -257,14 +265,14 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
   int err = 0;  // error for the return
   threeWaySplit(inputStr, left, middle, right, startIn, endIn);
   if (oper == BR_OPER_MINUS) {
-    if (middle[0] == '~') {
+    if (middle[0] == '#') {
       strcpy(tempStr, (char *)middle + 1);
-    } else if (middle[0] != '~') {
-      strcat(tempStr, "~");
+    } else if (middle[0] != '#') {
+      strcat(tempStr, "#");
       strcat(tempStr, middle);
     }
     strcpy(middle, tempStr);
-    pureLRBracketDeletion(left, right);
+    DeleteBrackets(left, right);
     left[strlen(left) - 1] = '\0';
     recombine(inputStr, left, middle, right);
   } else if (oper == BR_OPER_ACOS) {
@@ -274,7 +282,7 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
   } else if (oper == BR_OPER_ATAN) {
     unfoldHelper(atanl, left, middle, right, inputStr, 4, &err);
   } else if (oper == BR_OPER_SQRT) {
-    if (middle[0] != '-' && middle[0] != '~') {
+    if (middle[0] != '-' && middle[0] != '#') {
       unfoldHelper(sqrtl, left, middle, right, inputStr, 4, &err);
     } else {  // negative sqrt is a complex number
       err = OPER_PASS_NAN;
@@ -290,7 +298,7 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
   } else if (oper == BR_OPER_LN) {
     unfoldHelper(logl, left, middle, right, inputStr, 2, &err);
   } else if (oper == 0) {
-    pureLRBracketDeletion(left, right);
+    DeleteBrackets(left, right);
     recombine(inputStr, left, middle, right);
   }
   return err;
@@ -302,7 +310,7 @@ void unfoldHelper(long double (*f)(long double), char *left, char *middle,
   if (strstr("nan", middle) || strstr("NaN", middle) || strstr("NAN", middle)) {
     *err = OPER_PASS_NAN;
   }
-  pureLRBracketDeletion(left, right);
+  DeleteBrackets(left, right);
   left[strlen(left) - howManyLetters] = '\0';
   recombine(inputStr, left, middle, right);
 }
@@ -345,12 +353,11 @@ int checkLeftBracketOper(char *leftStr, int leftBracketIdx) {
   return leftBracketOperation;
 }
 
-void pureLRBracketDeletion(char *left, char *right) {
+void DeleteBrackets(char *left, char *right) {
   if (strlen(left) > 0) left[strlen(left) - 1] = '\0';
   if (strlen(right) > 0) {
-    char tempStr[MAX_STRING_SIZE] = {0};
-    strcpy(tempStr, (char *)right + 1);
-    strcpy(right, tempStr);
+    char *temp_ptr = right + 1;
+    strcpy(right, temp_ptr);
   }
 }
 
@@ -370,7 +377,7 @@ void transformUnariesAndMod(char *inputStr) {
         inputStr[1] = ' ';
       } else {
         // any other - starting unary:
-        inputStr[0] = '~';
+        inputStr[0] = '#';
       }
       // (-( simple negative reversion:
     } else if (inputStr[a] == '(' && inputStr[b] == '-' && inputStr[c] == '(') {
@@ -380,7 +387,7 @@ void transformUnariesAndMod(char *inputStr) {
       inputStr[0] = ' ';
       // (- (+ unary:
     } else if (inputStr[a] == '(' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      inputStr[b] = '#';
     } else if (inputStr[a] == '(' && inputStr[b] == '+') {
       inputStr[b] = ' ';
       // /+ *+ unary:
@@ -390,24 +397,24 @@ void transformUnariesAndMod(char *inputStr) {
       inputStr[b] = ' ';
       // /- *- unary:
     } else if (inputStr[a] == '/' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      inputStr[b] = '#';
     } else if (inputStr[a] == '*' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      inputStr[b] = '#';
       // ^+ ^- unary:
     } else if (inputStr[a] == '^' && inputStr[b] == '+') {
       inputStr[b] = ' ';
     } else if (inputStr[a] == '^' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      inputStr[b] = '#';
       // %- %+ unary:
     } else if (inputStr[a] == '%' && inputStr[b] == '+') {
       inputStr[b] = ' ';
     } else if (inputStr[a] == '%' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      inputStr[b] = '#';
       // +- -- unary:
     } else if (inputStr[a] == '+' && inputStr[b] == '-') {
-      inputStr[b] = '~';
-      // weird --(~-) case:
-    } else if (inputStr[a] == '~' && inputStr[b] == '-') {
+      inputStr[b] = '#';
+      // weird --(#-) case:
+    } else if (inputStr[a] == '#' && inputStr[b] == '-') {
       inputStr[a] = ' ';
       inputStr[b] = '+';
     } else if (inputStr[a] == '-' && inputStr[b] == '-') {  // ??
@@ -418,9 +425,9 @@ void transformUnariesAndMod(char *inputStr) {
       inputStr[b] = ' ';
     } else if (inputStr[a] == '-' && inputStr[b] == '+') {
       inputStr[b] = ' ';
-      // ~- unary:
-    } else if (inputStr[a] == '~' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+      // #- unary:
+    } else if (inputStr[a] == '#' && inputStr[b] == '-') {
+      inputStr[b] = '#';
       // mod to %:
     } else if (inputStr[a] == 'm' && inputStr[b] == 'o' && inputStr[c] == 'd') {
       inputStr[a] = ' ';
@@ -467,7 +474,7 @@ long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd) {
 
 long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
                         bool isLeft) {
-  char *toMatch = "0123456789~. ";
+  char *toMatch = "0123456789#. ";
   char finalLeftDigit[MAX_STRING_SIZE] = {0};
   int i = 0;
   if (isLeft) i = operatorPos - 1;
@@ -476,9 +483,9 @@ long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
   int minusesCount = 0;
   bool whileBreak = false;
   // using just this instead of transformUnariesAndMod:
-  if (isLeft && inputMid[0] == '-') inputMid[0] = '~';
+  if (isLeft && inputMid[0] == '-') inputMid[0] = '#';
   while (whileBreak == false) {
-    if (inputMid[i] == '~') {
+    if (inputMid[i] == '#') {
       finalLeftDigit[j] = '-';
       j++;
     } else {
@@ -515,9 +522,9 @@ int parseAndApplyOperators(char *midStr) {
     if (err != 0) break;
     while (findCharCount(midStr, "-") != 0) {
       // using just this instead of transformUnariesAndMod:
-      if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '~';
-      if (findCharCount(midStr, "~") == 1 && midStr[0] != '~') {
-        findAndReplaceChar(midStr, "~", '-');
+      if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '#';
+      if (findCharCount(midStr, "#") == 1 && midStr[0] != '#') {
+        findAndReplaceChar(midStr, "#", '-');
       }
       err = operatorPass(midStr, '-');
       if (err != 0) break;
@@ -589,7 +596,7 @@ int operatorPass(char *inputMid, char opChar) {
           break;
       }
       // using just this instead of transformUnariesAndMod:
-      if (sprintfResult[0] == '-') sprintfResult[0] = '~';
+      if (sprintfResult[0] == '-') sprintfResult[0] = '#';
       // changeAllUnaries(resultGcvt); // probably shouldn't be here
       if (operatorCount(inputMid) > 0) {
         char left[MAX_STRING_SIZE] = {0};
@@ -623,7 +630,7 @@ bool isJustANumber(char *inputStr) {
   char toMatch[MAX_STRING_SIZE] = "0123456789. inf";
   int i = 0;
   bool bIsJustANumber = true;
-  if (inputStr[0] == '-' || inputStr[0] == '~') i = 1;
+  if (inputStr[0] == '-' || inputStr[0] == '#') i = 1;
   if (strlen(inputStr) > 0) {
     bool whileBreak = false;
     while (whileBreak == false && inputStr[i] != '\0') {

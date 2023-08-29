@@ -76,7 +76,7 @@ dvi:
 
 test:
 	checkmk clean_mode=1 calcTest.check > test_check.c
-	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
+	gcc $(SYSFLAG) ${SOURCES} test_check.c $(LFLAGS) $(GFLAGS) -g -o test_check
 	./test_check
 
 gcov_report:
