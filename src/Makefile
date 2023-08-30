@@ -26,7 +26,7 @@ MEME_OFF=
 
 all: styleforce build
 
-push:
+push: clean
 	git add .
 	git commit -m "update"
 	git push origin develop
