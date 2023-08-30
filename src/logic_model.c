@@ -98,7 +98,7 @@ void CalcErrorMessage(enum calc_CalculationError error, char *error_message) {
 
 int AreBracketsValid(char *input_str) {
   int i = 0, left_count = 0, right_count = 0, mismatch = 0,
-      is_valid = calc_kBracketsInvalid;
+      is_valid = calc_kBracketsValid;
   while (input_str[i] != '\0' && mismatch > -1) {
     if (input_str[i] == '(') {
       mismatch++;
@@ -110,6 +110,7 @@ int AreBracketsValid(char *input_str) {
     ++i;
   }
   if (left_count == right_count) is_valid = calc_kBracketsValid;
+  if (left_count != right_count) is_valid = calc_kBracketsInvalid;
   if (mismatch < 0) is_valid = calc_kBracketsInvalid;
   return is_valid;
 }
