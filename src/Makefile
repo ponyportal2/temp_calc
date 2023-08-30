@@ -22,13 +22,14 @@ SOURCESGCOV= ./my_libs/*.c controller.c logic_model.c test_check.c
 HEADERSGCOV= ./my_libs/*.h controller.h logic_model.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
+COMMITNAME=
 # -----------------
 
 all: styleforce build
 
 push: clean
 	git add .
-	git commit -m "update"
+	git commit -m ${COMMITNAME}
 	git push origin develop
 
 build: clean ${SOURCES} ${HEADERS}
