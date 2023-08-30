@@ -43,6 +43,8 @@
 void testCalculate(char *input, char *output, int dummy);
 void UnlockCalculate();
 
+bool ContainsUnallowedTriples(const char *input_str);
+
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view);
 

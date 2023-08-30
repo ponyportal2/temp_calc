@@ -165,6 +165,12 @@ bool ContainsUnallowedRepeatingChars(const char *input_str) {
   return it_does;
 }
 
+bool ContainsUnallowedTriples(const char *input) {
+  bool it_does = false;
+  if (strstr(input, "---") || strstr(input, "+++")) it_does = true;
+  return it_does;
+}
+
 // Main calculation:
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view) {
@@ -182,7 +188,8 @@ void Calculate(view_to_calc_struct view_to_calc,
       expression_error = calcerr_kBracketsAreInvaild;
     }
     if (ContainsInvalidCharacters(expression) ||
-        ContainsUnallowedRepeatingChars(expression)) {
+        ContainsUnallowedRepeatingChars(expression) ||
+        ContainsUnallowedTriples(expression)) {
       expression_error = calcerr_kInvalidSymbols;
     }
     if (expression_error == calcerr_kNoError) {
