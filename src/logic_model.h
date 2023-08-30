@@ -59,6 +59,7 @@ void threeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
                    char middle[calc_kMaxStringSize],
                    char right[calc_kMaxStringSize], int start, int end);
 int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
+void CalcErrorMessage(int error_enum, char *error_message);
 int AreBracketsValid(char *inputStr);
 void transformUnariesAndMod(char *inputStr);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);

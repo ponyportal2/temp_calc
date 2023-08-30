@@ -14,20 +14,20 @@ enum calc_kAreBracketsValid {
   calc_kNoBrackets,
 };
 
-void CalcErrorMessage(enum calc_CalculationError error, char *error_message) {
+void CalcErrorMessage(int error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
   const char *BracketsAreInvaild_message = "Brackets are invalid";
   const char *InvalidSymbols_message = "Invalid symbols encountered";
-  if (error == calcerr_kNoError) {
+  if (error_enum == calcerr_kNoError) {
     // do nothing
-  } else if (error == calcerr_kDivisionByZero) {
+  } else if (error_enum == calcerr_kDivisionByZero) {
     strcpy(error_message, DivisionByZero_message);
-  } else if (error == calcerr_kNan) {
+  } else if (error_enum == calcerr_kNan) {
     strcpy(error_message, Nan_message);
-  } else if (error == calcerr_kBracketsAreInvaild) {
+  } else if (error_enum == calcerr_kBracketsAreInvaild) {
     strcpy(error_message, BracketsAreInvaild_message);
-  } else if (error == calcerr_kInvalidSymbols) {
+  } else if (error_enum == calcerr_kInvalidSymbols) {
     strcpy(error_message, InvalidSymbols_message);
   }
 }
