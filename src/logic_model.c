@@ -179,7 +179,7 @@ void Calculate(view_to_calc_struct view_to_calc,
   if (view_to_calc.unlock == false && locked == false) {
     locked = true;
     if (view_to_calc.calculation_type == calc_kCalculateWithX) {
-      replaceX(view_to_calc.calc_input, view_to_calc.x_variable);
+      ReplaceX(view_to_calc.calc_input, view_to_calc.x_variable);
     }
     char expression[calc_kMaxStringSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
@@ -286,21 +286,22 @@ bool doesHaveBrackets(char *inputStr) {
   return yesItDoesHaveBrackets;
 }
 
-void replaceX(char *inputStr, char *userX) {
+// i stopped here
+void ReplaceX(char *input_str, const char *input_x) {
   int i = 0;
-  char userXLocal[calc_kMaxStringSize] = {0};
-  strcpy(userXLocal, userX);
-  if (userXLocal[0] == '-') userXLocal[0] = '~';
-  while (inputStr[i] != '\0') {
-    if (inputStr[i] == 'x' || inputStr[i] == 'X') {
+  char input_x_local[calc_kMaxStringSize] = {0};
+  strcpy(input_x_local, input_x);
+  if (input_x_local[0] == '-') input_x_local[0] = '~';
+  while (input_str[i] != '\0') {
+    if (input_str[i] == 'x' || input_str[i] == 'X') {
       char tempStr[calc_kMaxStringSize] = {0};
       char left[calc_kMaxStringSize] = {0};
       char right[calc_kMaxStringSize] = {0};
-      twoWaySplit(inputStr, left, right, i);
+      twoWaySplit(input_str, left, right, i);
       strncpy(tempStr, left, strlen(left) - 1);
-      strcat(tempStr, userXLocal);
+      strcat(tempStr, input_x_local);
       strcat(tempStr, right);
-      strcpy(inputStr, tempStr);
+      strcpy(input_str, tempStr);
       i = 0;
     } else {
       i++;
