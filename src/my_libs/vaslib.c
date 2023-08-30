@@ -19,7 +19,7 @@ void cleanUpSpaces(char *inputStr) {
 void cleanUpTrailingZeroes(char *inputStr) {
   int i = strlen(inputStr) - 1;
   bool whileBreak = false;
-  if (charMatch('.', inputStr) == true) {
+  if (char_match('.', inputStr) == true) {
     while (whileBreak == false && i > -1) {
       if ((i - 1 > 0) && inputStr[i] == '0' && inputStr[i - 1] != '.') {
         inputStr[i] = '\0';
@@ -31,11 +31,10 @@ void cleanUpTrailingZeroes(char *inputStr) {
   }
 }
 
-int findCharCount(char *inputStr, char *toFind) {
-  int counter = 0;
-  int i = 0;
+int count_of_chars(char *inputStr, char *toFind) {
+  int counter = 0, i = 0;
   while (inputStr[i] != '\0') {
-    if (charMatch(inputStr[i], toFind)) counter++;
+    if (char_match(inputStr[i], toFind)) counter++;
     i++;
   }
   return counter;
@@ -50,14 +49,14 @@ void reverseString(char *string) {
   string[i] = '\0';
 }
 
-bool charMatch(char inputChar, const char *inputCharArr) {
-  int match = false;
+bool char_match(char char_to_match, const char *char_array_to_match) {
+  bool match = false;
   int i = 0;
-  while (inputCharArr[i] != '\0') {
-    if (inputCharArr[i] == inputChar) {
+  while (char_array_to_match[i] != '\0') {
+    if (char_array_to_match[i] == char_to_match) {
       match = true;
     }
-    i++;
+    ++i;
   }
   return match;
 }
@@ -90,7 +89,7 @@ int findAndReplaceChar(char *inputStr, char *toFind, char toReplace) {
   int counter = 0;
   int i = 0;
   while (inputStr[i] != '\0') {
-    if (charMatch(inputStr[i], toFind)) inputStr[i] = toReplace;
+    if (char_match(inputStr[i], toFind)) inputStr[i] = toReplace;
     i++;
   }
   return counter;

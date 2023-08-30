@@ -1,6 +1,7 @@
 #include "logic_model.h"
 
 #define EPSFOUR 0.0001
+#define MAX_STRING_SIZE 16384
 
 #suite SmartCalc
 

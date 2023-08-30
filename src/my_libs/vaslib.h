@@ -7,10 +7,10 @@
 void printStrCharByChar(char *inputStr);
 void cleanUpSpaces(char *inputStr);
 void nullCharArray(char *inputStr);
-int findCharCount(char *inputStr, char *toFind);
+int count_of_chars(char *inputStr, char *toFind);
 int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 void reverseString(char *string);
-bool charMatch(char inputChar, const char *inputCharArr);
+bool char_match(char inputChar, const char *inputCharArr);
 void cleanUpTrailingZeroes(char *inputStr);
 void twoWaySplit(char *inputStr, char left[VASLIBTHESIZE],
                  char right[VASLIBTHESIZE], int splitPos);

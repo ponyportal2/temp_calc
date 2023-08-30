@@ -23,7 +23,6 @@
 #define MAX_SOLVER_LOOPS 10000
 #define MAX_CALCULATIONS 10000
 
-#define MAX_STRING_SIZE 16384
 #define INFI 9999999999999999999999999999999999999999999999999999999999999999.0L
 #define EPS 0.0000001
 #define UNINIT -68
@@ -50,6 +49,7 @@
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
 void testCalculate(char *input, char *output, int dummy);
+void UnlockCalculate();
 
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view);
@@ -63,11 +63,11 @@ void replaceX(char *inputStr, char *userX);
 void addMultSignsToBrackets(char *inputStr);
 void printHelper(char *inputStr);
 void sprintfHelper(char *tempStr, long double calcResult);
-void threeWaySplit(char *inputStr, char left[MAX_STRING_SIZE],
-                   char middle[MAX_STRING_SIZE], char right[MAX_STRING_SIZE],
-                   int start, int end);
+void threeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
+                   char middle[calc_kMaxStringSize],
+                   char right[calc_kMaxStringSize], int start, int end);
 int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
-int isBracketsCountValid(char *inputStr);
+int AreBracketsValid(char *inputStr);
 void transformUnariesAndMod(char *inputStr);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
 long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
@@ -87,7 +87,7 @@ int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);
-int findCharCount(char *inputStr, char *toFind);
+int count_of_chars(char *inputStr, char *toFind);
 int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 int unfoldBrackets(char *inputStr, int startIn, int endIn);
 double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,

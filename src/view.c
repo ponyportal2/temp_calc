@@ -269,11 +269,11 @@ void DeleteWordFromInput(char* input_str) {
   if (strlen(input_str) > 0) {
     int i = strlen(input_str) - 1;
     bool loop_break = false;
-    if (charMatch(input_str[i], stop_characters)) {
+    if (char_match(input_str[i], stop_characters)) {
       input_str[i] = '\0';
     } else {
       while (i > -1 && loop_break == false) {
-        if (!charMatch(input_str[i], stop_characters)) {
+        if (!char_match(input_str[i], stop_characters)) {
           input_str[i] = '\0';
         } else {
           loop_break = true;

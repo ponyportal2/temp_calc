@@ -1,12 +1,40 @@
 #include "logic_model.h"
 
-// Calculation error messages:
-const char *calc_kOperPassDivisionByZero = "Division by zero is impossible";
-const char *calc_kOperPassNan = "NAN encountered during calculation";
-const char *calc_kOperPassTimeout =
-    "Input is probably invalid or NaN encountered";
-const char *calc_kOperPassBracketsCountInvaild = "Brackets count is invalid";
-const char *calc_kOperPassInvalidSymbols = "Invalid symbols encountered";
+enum calc_CalculationError {
+  calc_err_kNoError = 0,
+  calc_err_kDivisionByZero,
+  calc_err_kNan,
+  calc_err_kTimeout,
+  calc_err_kBracketsCountInvaild,
+  calc_err_kInvalidSymbols
+};
+
+enum calc_kAreBracketsValid {
+  calc_kBracketsValid = 0,
+  calc_kBracketsInvalid,
+  calc_kNoBrackets,
+};
+
+void CalcErrorMessage(enum calc_CalculationError error, char *error_message) {
+  const char *DivisionByZero_message = "Division by zero is impossible";
+  const char *Nan_message = "NAN encountered during calculation";
+  const char *Timeout_message = "Input is probably invalid or NaN encountered";
+  const char *BracketsCountInvaild_message = "Brackets count is invalid";
+  const char *InvalidSymbols_message = "Invalid symbols encountered";
+  if (error == calc_err_kNoError) {
+    // do nothing
+  } else if (error == calc_err_kDivisionByZero) {
+    strcpy(error_message, DivisionByZero_message);
+  } else if (error == calc_err_kNan) {
+    strcpy(error_message, Nan_message);
+  } else if (error == calc_err_kTimeout) {
+    strcpy(error_message, Timeout_message);
+  } else if (error == calc_err_kBracketsCountInvaild) {
+    strcpy(error_message, BracketsCountInvaild_message);
+  } else if (error == calc_err_kInvalidSymbols) {
+    strcpy(error_message, InvalidSymbols_message);
+  }
+}
 
 // Binary search solver:
 // bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
@@ -68,6 +96,31 @@ const char *calc_kOperPassInvalidSymbols = "Invalid symbols encountered";
 //   return returnValue;
 // }
 
+int AreBracketsValid(char *input_str) {
+  int i = 0, left_count = 0, right_count = 0, mismatch = 0,
+      is_valid = calc_kBracketsInvalid;
+  while (input_str[i] != '\0' && mismatch > -1) {
+    if (input_str[i] == '(') {
+      mismatch++;
+      left_count++;
+    } else if (input_str[i] == ')') {
+      mismatch--;
+      right_count++;
+    }
+    ++i;
+  }
+  if (left_count == right_count) is_valid = calc_kBracketsValid;
+  if (mismatch < 0) is_valid = calc_kBracketsInvalid;
+  return is_valid;
+}
+
+void UnlockCalculate() {
+  view_to_calc_struct view_to_calc;
+  view_to_calc.unlock = true;
+  calc_to_view_struct calc_to_view;
+  Calculate(view_to_calc, calc_to_view);
+}
+
 void testCalculate(char *input, char *output, int dummy) {
   calc_to_view_struct calc_to_view;
   view_to_calc_struct view_to_calc;
@@ -76,138 +129,143 @@ void testCalculate(char *input, char *output, int dummy) {
   strcpy(view_to_calc.calc_input, input);
   view_to_calc.calculation_type = calc_kCalculate;
   view_to_calc.unlock = false;
-  ControllerCommunicate(view_to_calc, calc_to_view);
+  Calculate(view_to_calc, calc_to_view);
   strcpy(output, calc_to_view.answer);
   if (view_to_calc.calc_input) free(view_to_calc.calc_input);
   if (calc_to_view.answer) free(calc_to_view.answer);
-  ControllerUnlockCalculate();
+  UnlockCalculate();
+}
+
+bool ContainsInvalidCharacters(const char *input_str) {
+  const char *kAllowedCharacters =
+      "0123456789 +-*/% . ( ) cos sin tan acos asin atan sqrt ln log ^ e mod ~";
+  bool it_does = false;
+  for (int i = 0; input_str[i] != '\0'; ++i) {
+    if (char_match(input_str[i], kAllowedCharacters) == 0) {
+      it_does = true;
+    }
+  }
+  return it_does;
+}
+
+bool ContainsUnallowedRepeatingChars(const char *input_str) {
+  const char *kUnallowedRepeating = "a cos sin tan sqrt ln log ^ e mod . * / %";
+  bool it_does = false, loop_break = false;
+  char previous_char = 0;
+  for (int i = 0; input_str[i] != '\0' && !loop_break; ++i) {
+    if (i != 0) {
+      char current_char = input_str[i];
+      if (current_char == previous_char &&
+          char_match(input_str[i], kUnallowedRepeating)) {
+        it_does = true;
+        loop_break = true;
+      }
+      previous_char = current_char;
+    } else if (i == 0) {
+      previous_char = input_str[i];
+    }
+  }
+  return it_does;
 }
 
 // Main calculation:
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view) {
-  static bool forceOneInst = false;
-  char *invalidCharList = "`<>?|;}{[]±§!@#$=";
-  if (view_to_calc.unlock == true) forceOneInst = false;
-  if (forceOneInst == false && view_to_calc.unlock == false) {
-    forceOneInst = true;
+  static bool locked = false;
+  if (view_to_calc.unlock == true) locked = false;
+  if (view_to_calc.unlock == false && locked == false) {
+    locked = true;
     if (view_to_calc.calculation_type == calc_kCalculateWithX) {
       replaceX(view_to_calc.calc_input, view_to_calc.x_variable);
     }
-    char lExpression[MAX_STRING_SIZE] = {0};
-    strcpy(lExpression, view_to_calc.calc_input);
-    int err = 0;
-    int calculationCount = 0;
-    if (isBracketsCountValid(lExpression) == 1 &&
-        findCharCount(invalidCharList, lExpression) == 0) {
-      transformUnariesAndMod(lExpression);
-      cleanUpSpaces(lExpression);
-      addMultSignsToBrackets(lExpression);
-      addOuterBrackets(lExpression);
+    char expression[calc_kMaxStringSize] = {0};
+    strcpy(expression, view_to_calc.calc_input);
+    int expression_error = calc_err_kNoError;
+    if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
+      expression_error = calc_err_kBracketsCountInvaild;
+    }
+    if (ContainsInvalidCharacters(expression) ||
+        ContainsUnallowedRepeatingChars(expression)) {
+      expression_error = calc_err_kInvalidSymbols;
+    }
+    if (expression_error == calc_err_kNoError) {
+      transformUnariesAndMod(expression);
+      cleanUpSpaces(expression);
+      addMultSignsToBrackets(expression);
+      addOuterBrackets(expression);
       int start = UNINIT;
       int end = UNINIT;
       int bracketsError = 0;
       bool allCalculationsFinished = false;
-      bool whileBreak = false;
+      bool loop_break = false;
       while (allCalculationsFinished == false && bracketsError == 0 &&
-             whileBreak == false && err == 0) {
-        char prev_l_expression[MAX_STRING_SIZE] = {0};
-        strcpy(prev_l_expression, lExpression);
-        printf("\n{%s}\n", lExpression);
-        char left[MAX_STRING_SIZE] = {0};
-        char middle[MAX_STRING_SIZE] = {0};
-        char right[MAX_STRING_SIZE] = {0};
-        bracketsError = findDeepestBrackets(lExpression, &start, &end);
+             loop_break == false && expression_error == 0) {
+        char prev_l_expression[calc_kMaxStringSize] = {0};
+        strcpy(prev_l_expression, expression);
+        // printf("\n{%s}\n", expression);
+        char left[calc_kMaxStringSize] = {0};
+        char middle[calc_kMaxStringSize] = {0};
+        char right[calc_kMaxStringSize] = {0};
+        bracketsError = findDeepestBrackets(expression, &start, &end);
         if (bracketsError == 0) {
-          threeWaySplit(lExpression, left, middle, right, start, end);
+          threeWaySplit(expression, left, middle, right, start, end);
           printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
-          err = parseAndApplyOperators(middle);
-          if (err == 0) {
-            recombine(lExpression, left, middle, right);
-            bracketsError = findDeepestBrackets(lExpression, &start, &end);
+          expression_error = parseAndApplyOperators(middle);
+          if (expression_error == 0) {
+            recombine(expression, left, middle, right);
+            bracketsError = findDeepestBrackets(expression, &start, &end);
             if (bracketsError == 0) {
-              err = unfoldBrackets(lExpression, start, end);
-              if (!doesHaveBrackets(lExpression) &&
-                  !isJustANumber(lExpression)) {
-                addOuterBrackets(lExpression);
-              } else if (!doesHaveBrackets(lExpression)) {
+              expression_error = unfoldBrackets(expression, start, end);
+              if (!doesHaveBrackets(expression) && !isJustANumber(expression)) {
+                addOuterBrackets(expression);
+              } else if (!doesHaveBrackets(expression)) {
                 allCalculationsFinished = true;
               }
             } else {
               printf("\n>BRACKETS ERROR<");
             }
           } else {  // there are errors like div by zero
-            whileBreak = true;
+            loop_break = true;
           }
         }
-        calculationCount++;
-        if (strcmp(prev_l_expression, lExpression) == 0) whileBreak = true;
+        printf("\n[%s]\n", expression);
+        if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
+          expression_error = calc_err_kBracketsCountInvaild;
+        }
+        if (strcmp(prev_l_expression, expression) == 0) {
+          printf(">>>\n%s\n<<<", prev_l_expression);
+          printf(">>>\nDAFAG\n<<<");
+          loop_break = true;
+        }
       }
-    } else if (isBracketsCountValid(lExpression) != 1) {
-      err = OPER_PASS_BRACKETS_COUNT_INVALID;
-    } else if (findCharCount(invalidCharList, lExpression) > 0) {
-      err = OPER_PASS_INVALID_SYMBOLS;
     }
 
     // OUTPUT LOGIC:
     // =============
-    if (calculationCount > MAX_CALCULATIONS - 2) err = OPER_PASS_TIMEOUT;
-    if (err == 0) {
-      if (lExpression[0] == '~') lExpression[0] = '-';
-      if (strtod(lExpression, NULL) > INFI) {
+    if (expression_error == calc_err_kNoError) {
+      if (expression[0] == '~') expression[0] = '-';
+      if (strtod(expression, NULL) > INFI) {
         strcpy(calc_to_view.answer, "inf");
-      } else if (strtod(lExpression, NULL) < (INFI * -1)) {
+      } else if (strtod(expression, NULL) < (INFI * -1)) {
         strcpy(calc_to_view.answer, "-inf");
       } else {
-        sprintfHelper(calc_to_view.answer, strtod(lExpression, NULL));
+        sprintfHelper(calc_to_view.answer, strtod(expression, NULL));
         cleanUpSpaces(calc_to_view.answer);
         cleanUpTrailingZeroes(calc_to_view.answer);
       }
-    } else if (err == OPER_PASS_DIVBYZERO) {
-      strcpy(calc_to_view.answer, calc_kOperPassDivisionByZero);
-    } else if (err == OPER_PASS_NAN) {
-      strcpy(calc_to_view.answer, calc_kOperPassNan);
-    } else if (err == OPER_PASS_TIMEOUT) {
-      strcpy(calc_to_view.answer, calc_kOperPassTimeout);
-    } else if (err == OPER_PASS_BRACKETS_COUNT_INVALID) {
-      strcpy(calc_to_view.answer, calc_kOperPassBracketsCountInvaild);
-    } else if (err == OPER_PASS_INVALID_SYMBOLS) {
-      strcpy(calc_to_view.answer, calc_kOperPassInvalidSymbols);
+      printf("\nTHE ANSWER:%s\n", calc_to_view.answer);
+    } else {
+      CalcErrorMessage(expression_error, calc_to_view.answer);
     }
   }
 }
 
 void addOuterBrackets(char *inputStr) {
-  char tempStr[MAX_STRING_SIZE] = {0};
+  char tempStr[calc_kMaxStringSize] = {0};
   strcat(tempStr, "(");
   strcat(tempStr, inputStr);
   strcat(tempStr, ")");
   strcpy(inputStr, tempStr);
-}
-
-int isBracketsCountValid(char *inputStr) {
-  bool yesItIsValid = 0;
-  int i = 0;
-  int leftBracketsCount = 0;
-  int rightBracketsCount = 0;
-  int isCorrect = 0;
-  while (inputStr[i] != '\0' && isCorrect > -1) {
-    if (inputStr[i] == '(') {
-      isCorrect++;
-      leftBracketsCount++;
-    } else if (inputStr[i] == ')') {
-      isCorrect--;
-      rightBracketsCount++;
-    }
-    i++;
-  }
-  if (leftBracketsCount == rightBracketsCount) {
-    yesItIsValid = 1;
-  }
-  if (isCorrect < 0) {
-    yesItIsValid = 0;
-  }
-  return yesItIsValid;
 }
 
 bool doesHaveBrackets(char *inputStr) {
@@ -226,14 +284,14 @@ bool doesHaveBrackets(char *inputStr) {
 
 void replaceX(char *inputStr, char *userX) {
   int i = 0;
-  char userXLocal[MAX_STRING_SIZE] = {0};
+  char userXLocal[calc_kMaxStringSize] = {0};
   strcpy(userXLocal, userX);
   if (userXLocal[0] == '-') userXLocal[0] = '~';
   while (inputStr[i] != '\0') {
     if (inputStr[i] == 'x' || inputStr[i] == 'X') {
-      char tempStr[MAX_STRING_SIZE] = {0};
-      char left[MAX_STRING_SIZE] = {0};
-      char right[MAX_STRING_SIZE] = {0};
+      char tempStr[calc_kMaxStringSize] = {0};
+      char left[calc_kMaxStringSize] = {0};
+      char right[calc_kMaxStringSize] = {0};
       twoWaySplit(inputStr, left, right, i);
       strncpy(tempStr, left, strlen(left) - 1);
       strcat(tempStr, userXLocal);
@@ -277,10 +335,10 @@ int findDeepestBrackets(char *inputStr, int *startIn, int *endIn) {
 
 int unfoldBrackets(char *inputStr, int startIn, int endIn) {
   int oper = checkLeftBracketOper(inputStr, startIn);
-  char left[MAX_STRING_SIZE] = {0};
-  char middle[MAX_STRING_SIZE] = {0};
-  char right[MAX_STRING_SIZE] = {0};
-  char tempStr[MAX_STRING_SIZE] = {0};
+  char left[calc_kMaxStringSize] = {0};
+  char middle[calc_kMaxStringSize] = {0};
+  char right[calc_kMaxStringSize] = {0};
+  char tempStr[calc_kMaxStringSize] = {0};
   int err = 0;  // error for the return
   threeWaySplit(inputStr, left, middle, right, startIn, endIn);
   if (oper == BR_OPER_MINUS) {
@@ -468,7 +526,7 @@ int operatorCount(char *inputStr) {
   int i = 0;
   int operatorCounter = 0;
   while (inputStr[i] != '\0') {
-    if (charMatch(inputStr[i], toMatch) == true) {
+    if (char_match(inputStr[i], toMatch) == true) {
       operatorCounter++;
     }
     i++;
@@ -477,7 +535,7 @@ int operatorCount(char *inputStr) {
 }
 
 void recombine(char *inputStr, char *left, char *middle, char *right) {
-  char tempStr[MAX_STRING_SIZE] = {0};
+  char tempStr[calc_kMaxStringSize] = {0};
   strcpy(tempStr, left);
   strcat(tempStr, middle);
   strcat(tempStr, right);
@@ -495,7 +553,7 @@ long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd) {
 double getLRDigits(char *input, int oper_position, int *digits_end,
                    bool is_left) {
   char *to_match = "0123456789~. inf nan NAN";
-  char final_number[MAX_STRING_SIZE] = {0};
+  char final_number[calc_kMaxStringSize] = {0};
   int i = 0;
   if (is_left) i = oper_position - 1;
   if (!is_left) i = oper_position + 1;
@@ -512,7 +570,7 @@ double getLRDigits(char *input, int oper_position, int *digits_end,
     if (!is_left) i++;
 
     if (i < 0 || i == (int)strlen(input) || input[i] == '\0') loop_break = true;
-    if (charMatch(input[i], to_match) != true) loop_break = true;
+    if (char_match(input[i], to_match) != true) loop_break = true;
   }
   *digits_end = i;
   if (is_left) reverseString(final_number);
@@ -532,10 +590,10 @@ int parseAndApplyOperators(char *midStr) {
     if (err != 0) break;
     err = operatorPassLoop(midStr, "%");
     if (err != 0) break;
-    while (findCharCount(midStr, "-") != 0) {
+    while (count_of_chars(midStr, "-") != 0) {
       // using just this instead of transformUnariesAndMod:
       if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '~';
-      if (findCharCount(midStr, "~") == 1 && midStr[0] != '~') {
+      if (count_of_chars(midStr, "~") == 1 && midStr[0] != '~') {
         findAndReplaceChar(midStr, "~", '-');
       }
       err = operatorPass(midStr, '-');
@@ -553,7 +611,7 @@ int parseAndApplyOperators(char *midStr) {
 int operatorPassLoop(char *inputMid, char *opChar) {
   int err = 0;
   bool whileBreak = false;
-  while (findCharCount(inputMid, opChar) != 0 && whileBreak == false) {
+  while (count_of_chars(inputMid, opChar) != 0 && whileBreak == false) {
     err = operatorPass(inputMid, opChar[0]);
     if (err) whileBreak = true;
   }
@@ -566,7 +624,7 @@ int operatorPass(char *inputMid, char opChar) {
   int resultStart = UNINIT;
   int resultEnd = UNINIT;
   long double calcResult = 0.0L;
-  char sprintfResult[MAX_STRING_SIZE] = {0};
+  char sprintfResult[calc_kMaxStringSize] = {0};
   bool whileBreak = false;
   while (inputMid[i] != '\0' && whileBreak == false) {
     if (inputMid[i] == opChar) {
@@ -611,9 +669,9 @@ int operatorPass(char *inputMid, char opChar) {
       if (sprintfResult[0] == '-') sprintfResult[0] = '~';
       // changeAllUnaries(resultGcvt); // probably shouldn't be here
       if (operatorCount(inputMid) > 0) {
-        char left[MAX_STRING_SIZE] = {0};
-        char middle[MAX_STRING_SIZE] = {0};
-        char right[MAX_STRING_SIZE] = {0};
+        char left[calc_kMaxStringSize] = {0};
+        char middle[calc_kMaxStringSize] = {0};
+        char right[calc_kMaxStringSize] = {0};
         threeWaySplit(inputMid, left, middle, right, resultStart, resultEnd);
         strcpy(inputMid, left);
         strcat(inputMid, sprintfResult);
@@ -639,14 +697,14 @@ void sprintfHelper(char *tempStr, long double longDoubleInput) {
 }
 
 bool isJustANumber(char *inputStr) {
-  char toMatch[MAX_STRING_SIZE] = "0123456789. inf";
+  char toMatch[calc_kMaxStringSize] = "0123456789. inf";
   int i = 0;
   bool bIsJustANumber = true;
   if (strlen(inputStr) > 0) {
     if (inputStr[0] == '-' || inputStr[0] == '~') i = 1;
     bool whileBreak = false;
     while (whileBreak == false && inputStr[i] != '\0') {
-      if (charMatch(inputStr[i], toMatch) == false) {
+      if (char_match(inputStr[i], toMatch) == false) {
         bIsJustANumber = false;
         whileBreak = true;
       }
@@ -660,15 +718,15 @@ bool isJustANumber(char *inputStr) {
 
 void addMultSignsToBrackets(char *inputStr) {
   int i = 0;
-  char tempStr[MAX_STRING_SIZE] = {0};
-  char left[MAX_STRING_SIZE] = {0};
-  char right[MAX_STRING_SIZE] = {0};
+  char tempStr[calc_kMaxStringSize] = {0};
+  char left[calc_kMaxStringSize] = {0};
+  char right[calc_kMaxStringSize] = {0};
   char *toMatch = "0123456789.";
   while (inputStr[i] != '\0') {
     bool leftBracketCondition =
-        inputStr[i] == ')' && charMatch(inputStr[i + 1], toMatch);
+        inputStr[i] == ')' && char_match(inputStr[i + 1], toMatch);
     bool rightBracketCondition =
-        inputStr[i + 1] == '(' && charMatch(inputStr[i], toMatch);
+        inputStr[i + 1] == '(' && char_match(inputStr[i], toMatch);
     if (leftBracketCondition == true || rightBracketCondition == true) {
       twoWaySplit(inputStr, left, right, i);
       strcpy(tempStr, left);

@@ -8,6 +8,7 @@
 #include "logic_model.h"
 
 #define EPSFOUR 0.0001
+#define MAX_STRING_SIZE 16384
 
 
 // TEST1
@@ -110,38 +111,6 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("15",NULL), strtold(outputStr,NULL), EPS);
-
-// TESTX2
-
-}
-END_TEST
-
-START_TEST(calcx2)
-{
-
-char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+x*-6+-3/-4++5++7)))))";
-char x[MAX_STRING_SIZE] = "-54343.43434"; 
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
-
-// TESTX3
-
-}
-END_TEST
-
-START_TEST(calcx3)
-{
-
-char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)+6)";
-char x[MAX_STRING_SIZE] = "-5678.1234";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX4
 
@@ -671,6 +640,38 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX_E_2
+
+}
+END_TEST
+
+START_TEST(calcx_E_2)
+{
+
+char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+x*-6+-3/-4++5++7)))))";
+char x[MAX_STRING_SIZE] = "-54343.43434"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX_E_3
+
+}
+END_TEST
+
+START_TEST(calcx_E_3)
+{
+
+char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)+6)";
+char x[MAX_STRING_SIZE] = "-5678.1234";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 }
 END_TEST
 
@@ -692,8 +693,6 @@ int main(void)
     tcase_add_test(tc1_1, calc6);
     suite_add_tcase(s2, tc2_1);
     tcase_add_test(tc2_1, calcx1);
-    tcase_add_test(tc2_1, calcx2);
-    tcase_add_test(tc2_1, calcx3);
     tcase_add_test(tc2_1, calcx4);
     tcase_add_test(tc2_1, calcx5);
     tcase_add_test(tc2_1, calcx8);
@@ -727,6 +726,8 @@ int main(void)
     tcase_add_test(tc2_1, calcx_E_29);
     tcase_add_test(tc2_1, calcx_E_7);
     tcase_add_test(tc2_1, calcx_E_6);
+    tcase_add_test(tc2_1, calcx_E_2);
+    tcase_add_test(tc2_1, calcx_E_3);
 
     srunner_add_suite(sr, s2);
 
