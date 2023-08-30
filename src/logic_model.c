@@ -547,8 +547,8 @@ long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd) {
   return getLRDigits(inputMid, operatorPos, digitsEnd, false);
 }
 
-double getLRDigits(char *input, int oper_position, int *digits_end,
-                   bool is_left) {
+long double getLRDigits(char *input, int oper_position, int *digits_end,
+                        bool is_left) {
   char *to_match = "0123456789~. inf nan NAN";
   char final_number[calc_kMaxStringSize] = {0};
   int i = 0;
@@ -653,8 +653,8 @@ int operatorPass(char *inputMid, char opChar) {
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '^':
-          calcResult = pow(getLeftDigits(inputMid, i, &resultStart),
-                           getRightDigits(inputMid, i, &resultEnd));
+          calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
+                            getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '%':

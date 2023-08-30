@@ -83,8 +83,8 @@ void wholeStrBracketDeletion(char *inputStr, int start, int end);
 int count_of_chars(char *inputStr, char *toFind);
 int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 int unfoldBrackets(char *inputStr, int startIn, int endIn);
-double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
-                   bool isLeft);
+long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
+                        bool isLeft);
 long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd);
 long double getLeftDigits(char *inputMid, int operatorPos, int *digitsEnd);
 int operatorPassLoop(char *inputMid, char *opChar);

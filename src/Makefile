@@ -26,6 +26,11 @@ MEME_OFF=
 
 all: styleforce build
 
+push:
+	git add .
+	git commit -m "update"
+	git push origin develop
+
 build: clean ${SOURCES} ${HEADERS}
 	# -mv c.wav c.doc
 	-mv c.doc c.wav 

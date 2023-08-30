@@ -14,7 +14,7 @@ char expression[MAX_STRING_SIZE] = "5+5";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("10",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("10",NULL), strtold(outputStr,NULL), EPS);
 
 // TEST2
 
@@ -24,7 +24,7 @@ char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+-54343.43434*-6+-3/-4
 char outputStr[MAX_STRING_SIZE] = {0}; 
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("-326073.35604",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
 
 // TEST3
 
@@ -34,7 +34,7 @@ char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+-5678.1234*-6+-3/-4+5+7)*(2/
 char outputStr[MAX_STRING_SIZE] = {0}; 
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("-40920.7057214",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 
 // TEST4
 
@@ -82,7 +82,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("15",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("15",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX4
 
@@ -94,7 +94,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("5",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX8
 
@@ -118,7 +118,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("844.409",NULL), strtod(outputStr,NULL), EPSFOUR);
+ck_assert_ldouble_eq_tol(strtold("844.409",NULL), strtold(outputStr,NULL), EPSFOUR);
 
 // TESTX10
 
@@ -130,7 +130,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("844.409",NULL), strtod(outputStr,NULL), EPSFOUR);
+ck_assert_ldouble_eq_tol(strtold("844.409",NULL), strtold(outputStr,NULL), EPSFOUR);
 
 // TESTX11
 
@@ -154,7 +154,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("0",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX12
 
@@ -179,7 +179,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("-6277101735386680763835789423207666416102355444464034512896.0",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("-6277101735386680763835789423207666416102355444464034512896.0",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX14
 
@@ -263,7 +263,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("5",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX22
 
@@ -275,7 +275,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("5",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX23
 
@@ -287,7 +287,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("1.0708",NULL), strtod(outputStr,NULL), EPSFOUR);
+ck_assert_ldouble_eq_tol(strtold("1.0708",NULL), strtold(outputStr,NULL), EPSFOUR);
 
 // TESTX24
 
@@ -467,7 +467,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("0",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX_E_2
 
@@ -479,7 +479,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("-326073.35604",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX_E_3
 
@@ -491,7 +491,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("-40920.7057214",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX_VAL_1
 
@@ -503,7 +503,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("Invalid symbols encountered",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX_VAL_2
 
@@ -515,7 +515,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_double_eq_tol(strtod("Invalid symbols encountered",NULL), strtod(outputStr,NULL), EPS);
+ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX_E_18
 
