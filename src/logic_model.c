@@ -1,12 +1,11 @@
 #include "logic_model.h"
 
 enum calc_CalculationError {
-  calc_err_kNoError = 0,
-  calc_err_kDivisionByZero,
-  calc_err_kNan,
-  calc_err_kTimeout,
-  calc_err_kBracketsCountInvaild,
-  calc_err_kInvalidSymbols
+  calcerr_kNoError = 0,
+  calcerr_kDivisionByZero,
+  calcerr_kNan,
+  calcerr_kBracketsAreInvaild,
+  calcerr_kInvalidSymbols
 };
 
 enum calc_kAreBracketsValid {
@@ -18,20 +17,17 @@ enum calc_kAreBracketsValid {
 void CalcErrorMessage(enum calc_CalculationError error, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
-  const char *Timeout_message = "Input is probably invalid or NaN encountered";
-  const char *BracketsCountInvaild_message = "Brackets count is invalid";
+  const char *BracketsAreInvaild_message = "Brackets are invalid";
   const char *InvalidSymbols_message = "Invalid symbols encountered";
-  if (error == calc_err_kNoError) {
+  if (error == calcerr_kNoError) {
     // do nothing
-  } else if (error == calc_err_kDivisionByZero) {
+  } else if (error == calcerr_kDivisionByZero) {
     strcpy(error_message, DivisionByZero_message);
-  } else if (error == calc_err_kNan) {
+  } else if (error == calcerr_kNan) {
     strcpy(error_message, Nan_message);
-  } else if (error == calc_err_kTimeout) {
-    strcpy(error_message, Timeout_message);
-  } else if (error == calc_err_kBracketsCountInvaild) {
-    strcpy(error_message, BracketsCountInvaild_message);
-  } else if (error == calc_err_kInvalidSymbols) {
+  } else if (error == calcerr_kBracketsAreInvaild) {
+    strcpy(error_message, BracketsAreInvaild_message);
+  } else if (error == calcerr_kInvalidSymbols) {
     strcpy(error_message, InvalidSymbols_message);
   }
 }
@@ -181,15 +177,15 @@ void Calculate(view_to_calc_struct view_to_calc,
     }
     char expression[calc_kMaxStringSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
-    int expression_error = calc_err_kNoError;
+    int expression_error = calcerr_kNoError;
     if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
-      expression_error = calc_err_kBracketsCountInvaild;
+      expression_error = calcerr_kBracketsAreInvaild;
     }
     if (ContainsInvalidCharacters(expression) ||
         ContainsUnallowedRepeatingChars(expression)) {
-      expression_error = calc_err_kInvalidSymbols;
+      expression_error = calcerr_kInvalidSymbols;
     }
-    if (expression_error == calc_err_kNoError) {
+    if (expression_error == calcerr_kNoError) {
       transformUnariesAndMod(expression);
       cleanUpSpaces(expression);
       addMultSignsToBrackets(expression);
@@ -231,7 +227,7 @@ void Calculate(view_to_calc_struct view_to_calc,
         }
         printf("\n[%s]\n", expression);
         if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
-          expression_error = calc_err_kBracketsCountInvaild;
+          expression_error = calcerr_kBracketsAreInvaild;
         }
         if (strcmp(prev_l_expression, expression) == 0) {
           printf(">>>\n%s\n<<<", prev_l_expression);
@@ -243,7 +239,7 @@ void Calculate(view_to_calc_struct view_to_calc,
 
     // OUTPUT LOGIC:
     // =============
-    if (expression_error == calc_err_kNoError) {
+    if (expression_error == calcerr_kNoError) {
       if (expression[0] == '~') expression[0] = '-';
       if (strtod(expression, NULL) > INFI) {
         strcpy(calc_to_view.answer, "inf");
@@ -363,7 +359,7 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
     if (middle[0] != '-' && middle[0] != '~') {
       unfoldHelper(sqrtl, left, middle, right, inputStr, 4, &err);
     } else {  // negative sqrt is a complex number
-      err = OPER_PASS_NAN;
+      err = calcerr_kNan;
     }
   } else if (oper == BR_OPER_COS) {
     unfoldHelper(cosl, left, middle, right, inputStr, 3, &err);
@@ -386,7 +382,7 @@ void unfoldHelper(long double (*f)(long double), char *left, char *middle,
                   char *right, char *inputStr, int howManyLetters, int *err) {
   sprintfHelper(middle, f(strtold(middle, NULL)));
   if (strstr("nan", middle) || strstr("NaN", middle) || strstr("NAN", middle)) {
-    *err = OPER_PASS_NAN;
+    *err = calcerr_kNan;
   }
   DeleteBrackets(left, right);
   left[strlen(left) - howManyLetters] = '\0';
@@ -621,7 +617,7 @@ int operatorPassLoop(char *inputMid, char *opChar) {
 
 int operatorPass(char *inputMid, char opChar) {
   int i = 0;
-  bool err = 0;
+  int err = 0;
   int resultStart = UNINIT;
   int resultEnd = UNINIT;
   long double calcResult = 0.0L;
@@ -636,12 +632,13 @@ int operatorPass(char *inputMid, char opChar) {
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '/':
+
           if (getRightDigits(inputMid, i, &resultEnd) != 0) {
             calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) /
                          (long double)getRightDigits(inputMid, i, &resultEnd);
             sprintfHelper(sprintfResult, calcResult);
           } else {
-            err = OPER_PASS_DIVBYZERO;
+            err = calcerr_kDivisionByZero;
             whileBreak = true;
           }
           break;
@@ -656,8 +653,8 @@ int operatorPass(char *inputMid, char opChar) {
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '^':
-          calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
-                            getRightDigits(inputMid, i, &resultEnd));
+          calcResult = pow(getLeftDigits(inputMid, i, &resultStart),
+                           getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '%':
@@ -686,7 +683,7 @@ int operatorPass(char *inputMid, char opChar) {
     i++;
   }
   if (calcResult != calcResult && err == 0) {  // checking for NAN
-    err = OPER_PASS_NAN;
+    err = calcerr_kNan;
   }
   return err;
 }

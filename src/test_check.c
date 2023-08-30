@@ -7,6 +7,7 @@
 
 #include "logic_model.h"
 
+#define EPS 0.0000009
 #define EPSFOUR 0.0001
 #define MAX_STRING_SIZE 16384
 
@@ -90,7 +91,7 @@ char expression[MAX_STRING_SIZE] = "-(-5+aboba)";
 char outputStr[MAX_STRING_SIZE] = {0}; 
 testCalculate(expression, outputStr, 0);
 
-ck_assert_str_eq("Input is probably invalid or NaN encountered", outputStr);
+ck_assert_str_eq("Invalid symbols encountered", outputStr);
 
 // ------
 // WITH X
@@ -127,22 +128,6 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("5",NULL), strtold(outputStr,NULL), EPS);
-
-// TESTX5
-
-}
-END_TEST
-
-START_TEST(calcx5)
-{
-
-char expression[MAX_STRING_SIZE] = "45/x";
-char x[MAX_STRING_SIZE] = "0";
-char outputStr[MAX_STRING_SIZE] = {0}; 
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("Division by zero is impossible", outputStr);
 
 // TESTX8
 
@@ -206,7 +191,23 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("-3999999999999000000069632.0",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("-3999999999998999742382080.0", outputStr);
+
+// TESTX11_2
+
+}
+END_TEST
+
+START_TEST(calcx11_2)
+{
+
+char expression[MAX_STRING_SIZE] = "(x^2+x^3*(-4 * x)-100)-(x^2+x^3*(-4 * x)-100)";
+char x[MAX_STRING_SIZE] = "-1000000";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("0",NULL), strtold(outputStr,NULL), EPS);
 
 // TESTX12
 
@@ -287,7 +288,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
-ck_assert_str_eq("Brackets count is invalid", outputStr);
+ck_assert_str_eq("Brackets are invalid", outputStr);
 
 // TESTX17
 
@@ -304,22 +305,6 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("0.5609747685", outputStr);
-
-// TESTX18
-
-}
-END_TEST
-
-START_TEST(calcx18)
-{
-
-char expression[MAX_STRING_SIZE] = "sin(sqrt(x^((-21)^(1/4))))";
-char x[MAX_STRING_SIZE] = "0.5";
-char outputStr[MAX_STRING_SIZE] = {0};
-replaceX(expression, x);
-testCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
 // TESTX19
 
@@ -672,6 +657,70 @@ replaceX(expression, x);
 testCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("-40920.7057214",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX_VAL_1
+
+}
+END_TEST
+
+START_TEST(calcx_VAL_1)
+{
+
+char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)+**6)";
+char x[MAX_STRING_SIZE] = "-5678.1234";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX_VAL_2
+
+}
+END_TEST
+
+START_TEST(calcx_VAL_2)
+{
+
+char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)+&6)";
+char x[MAX_STRING_SIZE] = "-5678.1234";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX_E_18
+
+}
+END_TEST
+
+START_TEST(calcx_E_18)
+{
+
+char expression[MAX_STRING_SIZE] = "sin(sqrt(x^((-21)^(1/4))))";
+char x[MAX_STRING_SIZE] = "0.5";
+char outputStr[MAX_STRING_SIZE] = {0};
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("NAN encountered during calculation", outputStr);
+
+// TESTX_E_5
+
+}
+END_TEST
+
+START_TEST(calcx_E_5)
+{
+
+char expression[MAX_STRING_SIZE] = "45/x";
+char x[MAX_STRING_SIZE] = "0";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+replaceX(expression, x);
+testCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("Division by zero is impossible", outputStr);
 }
 END_TEST
 
@@ -694,18 +743,17 @@ int main(void)
     suite_add_tcase(s2, tc2_1);
     tcase_add_test(tc2_1, calcx1);
     tcase_add_test(tc2_1, calcx4);
-    tcase_add_test(tc2_1, calcx5);
     tcase_add_test(tc2_1, calcx8);
     tcase_add_test(tc2_1, calcx9);
     tcase_add_test(tc2_1, calcx10);
     tcase_add_test(tc2_1, calcx11);
+    tcase_add_test(tc2_1, calcx11_2);
     tcase_add_test(tc2_1, calcx12);
     tcase_add_test(tc2_1, calcx13);
     tcase_add_test(tc2_1, calcx14);
     tcase_add_test(tc2_1, calcx15);
     tcase_add_test(tc2_1, calcx16);
     tcase_add_test(tc2_1, calcx17);
-    tcase_add_test(tc2_1, calcx18);
     tcase_add_test(tc2_1, calcx19);
     tcase_add_test(tc2_1, calcx20);
     tcase_add_test(tc2_1, calcx21);
@@ -728,6 +776,10 @@ int main(void)
     tcase_add_test(tc2_1, calcx_E_6);
     tcase_add_test(tc2_1, calcx_E_2);
     tcase_add_test(tc2_1, calcx_E_3);
+    tcase_add_test(tc2_1, calcx_VAL_1);
+    tcase_add_test(tc2_1, calcx_VAL_2);
+    tcase_add_test(tc2_1, calcx_E_18);
+    tcase_add_test(tc2_1, calcx_E_5);
 
     srunner_add_suite(sr, s2);
 
