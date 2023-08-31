@@ -60,17 +60,6 @@ bool char_match(char char_to_match, const char *char_array_to_match) {
   }
   return match;
 }
-
-void twoWaySplit(char *inputStr, char left[VASLIBTHESIZE],
-                 char right[VASLIBTHESIZE], int splitPos) {
-  char tempStr[VASLIBTHESIZE] = {0};
-  if (splitPos > -1 && splitPos < (int)strlen(inputStr)) {
-    strncpy(left, inputStr, splitPos + 1);
-    strcpy(right, inputStr + splitPos + 1);
-  }
-  strcpy(inputStr, tempStr);
-}
-
 void threeWaySplit(char *inputStr, char left[VASLIBTHESIZE],
                    char middle[VASLIBTHESIZE], char right[VASLIBTHESIZE],
                    int start, int end) {

@@ -12,7 +12,7 @@ int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 void reverseString(char *string);
 bool char_match(char inputChar, const char *inputCharArr);
 void cleanUpTrailingZeroes(char *inputStr);
-void twoWaySplit(char *inputStr, char left[VASLIBTHESIZE],
+void SplitInHalf(char *inputStr, char left[VASLIBTHESIZE],
                  char right[VASLIBTHESIZE], int splitPos);
 void threeWaySplit(char *inputStr, char left[VASLIBTHESIZE],
                    char middle[VASLIBTHESIZE], char right[VASLIBTHESIZE],

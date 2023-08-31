@@ -22,14 +22,14 @@ SOURCESGCOV= ./my_libs/*.c controller.c logic_model.c test_check.c
 HEADERSGCOV= ./my_libs/*.h controller.h logic_model.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
-cum= 
+com= 
 # -----------------
 
 all: styleforce build
 
 push: clean
 	git add .
-	git commit -m ${cum}
+	git commit -m ${com}
 	git push origin develop
 
 build: clean ${SOURCES} ${HEADERS}
@@ -83,10 +83,10 @@ dist: clean
 dvi:
 	open readme.html
 
-test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV}
+test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV} 
 	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
 	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
-	./test_check
+	./test_check ${INPUT}
 
 gcov_report:
 	checkmk clean_mode=1 ${CHECKFILE} > test_check.c

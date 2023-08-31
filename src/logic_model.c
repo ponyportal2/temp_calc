@@ -92,6 +92,17 @@ void CalcErrorMessage(int error_enum, char *error_message) {
 //   return returnValue;
 // }
 
+// Splits the input string into left and right parts up to split_pos inclusive
+void SplitInHalf(char *input_str, char left[calc_kMaxStringSize],
+                 char right[calc_kMaxStringSize], int split_pos) {
+  char tempStr[calc_kMaxStringSize] = {0};
+  if (split_pos > -1 && split_pos < (int)strlen(input_str)) {
+    strncpy(left, input_str, split_pos + 1);
+    strcpy(right, input_str + split_pos + 1);
+  }
+  strcpy(input_str, tempStr);
+}
+
 int AreBracketsValid(char *input_str) {
   int i = 0, left_count = 0, right_count = 0, mismatch = 0,
       is_valid = calc_kBracketsValid;
@@ -286,18 +297,16 @@ bool doesHaveBrackets(char *inputStr) {
   return yesItDoesHaveBrackets;
 }
 
-// i stopped here
 void ReplaceX(char *input_str, const char *input_x) {
-  int i = 0;
   char input_x_local[calc_kMaxStringSize] = {0};
   strcpy(input_x_local, input_x);
   if (input_x_local[0] == '-') input_x_local[0] = '~';
+  int i = 0;
   while (input_str[i] != '\0') {
     if (input_str[i] == 'x' || input_str[i] == 'X') {
-      char tempStr[calc_kMaxStringSize] = {0};
-      char left[calc_kMaxStringSize] = {0};
-      char right[calc_kMaxStringSize] = {0};
-      twoWaySplit(input_str, left, right, i);
+      char tempStr[calc_kMaxStringSize] = {0}, left[calc_kMaxStringSize] = {0},
+           right[calc_kMaxStringSize] = {0};
+      SplitInHalf(input_str, left, right, i);
       strncpy(tempStr, left, strlen(left) - 1);
       strcat(tempStr, input_x_local);
       strcat(tempStr, right);
@@ -734,14 +743,14 @@ void addMultSignsToBrackets(char *inputStr) {
     bool rightBracketCondition =
         inputStr[i + 1] == '(' && char_match(inputStr[i], toMatch);
     if (leftBracketCondition == true || rightBracketCondition == true) {
-      twoWaySplit(inputStr, left, right, i);
+      SplitInHalf(inputStr, left, right, i);
       strcpy(tempStr, left);
       strcat(tempStr, "*");
       strcat(tempStr, right);
       strcpy(inputStr, tempStr);
       i = 0;
     } else if (inputStr[i] == ')' && inputStr[i + 1] == '(') {
-      twoWaySplit(inputStr, left, right, i);
+      SplitInHalf(inputStr, left, right, i);
       strcpy(tempStr, left);
       strcat(tempStr, "*");
       strcat(tempStr, right);
