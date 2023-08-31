@@ -95,12 +95,12 @@ void CalcErrorMessage(int error_enum, char *error_message) {
 // Splits the input string into left and right parts up to split_pos inclusive
 void SplitInHalf(char *input_str, char left[calc_kMaxStringSize],
                  char right[calc_kMaxStringSize], int split_pos) {
-  char tempStr[calc_kMaxStringSize] = {0};
   if (split_pos > -1 && split_pos < (int)strlen(input_str)) {
     strncpy(left, input_str, split_pos + 1);
     strcpy(right, input_str + split_pos + 1);
   }
-  strcpy(input_str, tempStr);
+  // char tempStr[calc_kMaxStringSize] = {0}; // ????
+  // strcpy(input_str, tempStr);  // ????
 }
 
 int AreBracketsValid(char *input_str) {

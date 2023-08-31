@@ -53,7 +53,7 @@ void unfoldHelper(long double (*f)(long double), char *left, char *middle,
 bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
                         char *possibleAnswer);
 void linearSolver(char *expression, long double expectedAnswer);
-void replaceX(char *inputStr, char *userX);
+void ReplaceX(char *input_str, const char *input_x);
 void addMultSignsToBrackets(char *inputStr);
 void printHelper(char *inputStr);
 void sprintfHelper(char *tempStr, long double calcResult);
