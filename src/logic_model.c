@@ -8,20 +8,12 @@ enum calc_CalculationError {
   calcerr_kInvalidSymbols
 };
 
-enum calc_kAreBracketsValid {
-  calc_kBracketsValid = 0,
-  calc_kBracketsInvalid,
-  calc_kNoBrackets,
-};
-
 void CalcErrorMessage(int error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
   const char *BracketsAreInvaild_message = "Brackets are invalid";
   const char *InvalidSymbols_message = "Invalid symbols encountered";
-  if (error_enum == calcerr_kNoError) {
-    // do nothing
-  } else if (error_enum == calcerr_kDivisionByZero) {
+  if (error_enum == calcerr_kDivisionByZero) {
     strcpy(error_message, DivisionByZero_message);
   } else if (error_enum == calcerr_kNan) {
     strcpy(error_message, Nan_message);
@@ -103,9 +95,9 @@ void SplitInHalf(char *input_str, char left[calc_kMaxStringSize],
   // strcpy(input_str, tempStr);  // ????
 }
 
-int AreBracketsValid(char *input_str) {
-  int i = 0, left_count = 0, right_count = 0, mismatch = 0,
-      is_valid = calc_kBracketsValid;
+bool AreBracketsValid(const char *input_str) {
+  int i = 0, left_count = 0, right_count = 0, mismatch = 0;
+  bool is_valid = false;
   while (input_str[i] != '\0' && mismatch > -1) {
     if (input_str[i] == '(') {
       mismatch++;
@@ -116,9 +108,9 @@ int AreBracketsValid(char *input_str) {
     }
     ++i;
   }
-  if (left_count == right_count) is_valid = calc_kBracketsValid;
-  if (left_count != right_count) is_valid = calc_kBracketsInvalid;
-  if (mismatch < 0) is_valid = calc_kBracketsInvalid;
+  if (left_count == right_count) is_valid = true;
+  if (left_count != right_count) is_valid = false;
+  if (mismatch < 0) is_valid = false;
   return is_valid;
 }
 
@@ -129,7 +121,7 @@ void UnlockCalculate() {
   Calculate(view_to_calc, calc_to_view);
 }
 
-void testCalculate(char *input, char *output, int dummy) {
+void TestCalculate(char *input, char *output, int dummy) {
   calc_to_view_struct calc_to_view;
   view_to_calc_struct view_to_calc;
   view_to_calc.calc_input = (char *)calloc(calc_kMaxStringSize, sizeof(char));
@@ -182,6 +174,19 @@ bool ContainsUnallowedTriples(const char *input) {
   return it_does;
 }
 
+int Validation(const char *expression) {
+  int expression_error = calcerr_kNoError;
+  if (!AreBracketsValid(expression)) {
+    expression_error = calcerr_kBracketsAreInvaild;
+  }
+  if (ContainsInvalidCharacters(expression) ||
+      ContainsUnallowedRepeatingChars(expression) ||
+      ContainsUnallowedTriples(expression)) {
+    expression_error = calcerr_kInvalidSymbols;
+  }
+  return expression_error;
+}
+
 // Main calculation:
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view) {
@@ -194,64 +199,44 @@ void Calculate(view_to_calc_struct view_to_calc,
     }
     char expression[calc_kMaxStringSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
-    int expression_error = calcerr_kNoError;
-    if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
-      expression_error = calcerr_kBracketsAreInvaild;
-    }
-    if (ContainsInvalidCharacters(expression) ||
-        ContainsUnallowedRepeatingChars(expression) ||
-        ContainsUnallowedTriples(expression)) {
-      expression_error = calcerr_kInvalidSymbols;
-    }
+    int expression_error = Validation(expression);
     if (expression_error == calcerr_kNoError) {
-      transformUnariesAndMod(expression);
+      TransformUnariesAndMod(expression);
       cleanUpSpaces(expression);
       addMultSignsToBrackets(expression);
       addOuterBrackets(expression);
-      int start = UNINIT;
-      int end = UNINIT;
-      int bracketsError = 0;
-      bool allCalculationsFinished = false;
-      bool loop_break = false;
+      int start = UNINIT, end = UNINIT, bracketsError = 0;
+      bool allCalculationsFinished = false, loop_break = false;
       while (allCalculationsFinished == false && bracketsError == 0 &&
              loop_break == false && expression_error == 0) {
         char prev_l_expression[calc_kMaxStringSize] = {0};
         strcpy(prev_l_expression, expression);
         // printf("\n{%s}\n", expression);
-        char left[calc_kMaxStringSize] = {0};
-        char middle[calc_kMaxStringSize] = {0};
-        char right[calc_kMaxStringSize] = {0};
+        char left[calc_kMaxStringSize] = {0}, middle[calc_kMaxStringSize] = {0},
+             right[calc_kMaxStringSize] = {0};
         bracketsError = findDeepestBrackets(expression, &start, &end);
         if (bracketsError == 0) {
           threeWaySplit(expression, left, middle, right, start, end);
-          printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
+          // printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
           expression_error = parseAndApplyOperators(middle);
+          if (expression_error != 0) loop_break = true;
           if (expression_error == 0) {
             recombine(expression, left, middle, right);
             bracketsError = findDeepestBrackets(expression, &start, &end);
-            if (bracketsError == 0) {
-              expression_error = unfoldBrackets(expression, start, end);
-              if (!doesHaveBrackets(expression) && !isJustANumber(expression)) {
-                addOuterBrackets(expression);
-              } else if (!doesHaveBrackets(expression)) {
-                allCalculationsFinished = true;
-              }
-            } else {
-              printf("\n>BRACKETS ERROR<");
+            // if (bracketsError != 0) printf("\n>BRACKETS ERROR<");
+            expression_error = unfoldBrackets(expression, start, end);
+            if (!doesHaveBrackets(expression) && !isJustANumber(expression)) {
+              addOuterBrackets(expression);
+            } else if (!doesHaveBrackets(expression)) {
+              allCalculationsFinished = true;
             }
-          } else {  // there are errors like div by zero
-            loop_break = true;
           }
         }
-        printf("\n[%s]\n", expression);
-        if (AreBracketsValid(expression) == calc_kBracketsInvalid) {
+        // printf("\n[%s]\n", expression);
+        if (!AreBracketsValid(expression)) {
           expression_error = calcerr_kBracketsAreInvaild;
         }
-        if (strcmp(prev_l_expression, expression) == 0) {
-          printf(">>>\n%s\n<<<", prev_l_expression);
-          printf(">>>\nDAFAG\n<<<");
-          loop_break = true;
-        }
+        if (strcmp(prev_l_expression, expression) == 0) loop_break = true;
       }
     }
 
@@ -453,85 +438,129 @@ void DeleteBrackets(char *left, char *right) {
   }
 }
 
-void transformUnariesAndMod(char *inputStr) {
+void TransformUnariesAndMod(char *u) {
   bool whileBreak = false;
-  int a = 0;
-  int b = 1;
-  int c = 2;
+  int a = 0, b = 1, c = 2;
   while (whileBreak == false) {
-    if (a == 0 && inputStr[0] == '-') {
+    if (a == 0 && u[0] == '-') {
       // -( starting unary:
-      if (inputStr[1] == '(') {
-        inputStr[0] = '_';
+      if (u[1] == '(') {
+        u[0] = '_';
         // --starting unary:
-      } else if (inputStr[1] == '-') {
-        inputStr[0] = ' ';
-        inputStr[1] = ' ';
+      } else if (u[1] == '-') {
+        u[0] = ' ';
+        u[1] = ' ';
       } else {
         // any other - starting unary:
-        inputStr[0] = '~';
+        u[0] = '~';
       }
       // (-( simple negative reversion:
-    } else if (inputStr[a] == '(' && inputStr[b] == '-' && inputStr[c] == '(') {
-      inputStr[b] = '_';
+    } else if (u[a] == '(' && u[b] == '-' && u[c] == '(') {
+      u[b] = '_';
       // (- (+ unary:
-    } else if (a == 0 && inputStr[0] == '+') {
-      inputStr[0] = ' ';
+    } else if (a == 0 && u[0] == '+') {
+      u[0] = ' ';
       // (- (+ unary:
-    } else if (inputStr[a] == '(' && inputStr[b] == '-') {
-      inputStr[b] = '~';
-    } else if (inputStr[a] == '(' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
+    } else if (u[a] == '(' && u[b] == '-') {
+      u[b] = '~';
+    } else if (u[a] == '(' && u[b] == '+') {
+      u[b] = ' ';
       // /+ *+ unary:
-    } else if (inputStr[a] == '/' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
-    } else if (inputStr[a] == '*' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
+    } else if (u[a] == '/' && u[b] == '+') {
+      u[b] = ' ';
+    } else if (u[a] == '*' && u[b] == '+') {
+      u[b] = ' ';
       // /- *- unary:
-    } else if (inputStr[a] == '/' && inputStr[b] == '-') {
-      inputStr[b] = '~';
-    } else if (inputStr[a] == '*' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+    } else if (u[a] == '/' && u[b] == '-') {
+      u[b] = '~';
+    } else if (u[a] == '*' && u[b] == '-') {
+      u[b] = '~';
       // ^+ ^- unary:
-    } else if (inputStr[a] == '^' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
-    } else if (inputStr[a] == '^' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+    } else if (u[a] == '^' && u[b] == '+') {
+      u[b] = ' ';
+    } else if (u[a] == '^' && u[b] == '-') {
+      u[b] = '~';
       // %- %+ unary:
-    } else if (inputStr[a] == '%' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
-    } else if (inputStr[a] == '%' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+    } else if (u[a] == '%' && u[b] == '+') {
+      u[b] = ' ';
+    } else if (u[a] == '%' && u[b] == '-') {
+      u[b] = '~';
       // +- -- unary:
-    } else if (inputStr[a] == '+' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+    } else if (u[a] == '+' && u[b] == '-') {
+      u[b] = '~';
       // weird --(~-) case:
-    } else if (inputStr[a] == '~' && inputStr[b] == '-') {
-      inputStr[a] = ' ';
-      inputStr[b] = '+';
-    } else if (inputStr[a] == '-' && inputStr[b] == '-') {  // ??
-      inputStr[a] = ' ';
-      inputStr[b] = '+';
+    } else if (u[a] == '~' && u[b] == '-') {
+      u[a] = ' ';
+      u[b] = '+';
+    } else if (u[a] == '-' && u[b] == '-') {  // ??
+      u[a] = ' ';
+      u[b] = '+';
       // ++ -+ unary:
-    } else if (inputStr[a] == '+' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
-    } else if (inputStr[a] == '-' && inputStr[b] == '+') {
-      inputStr[b] = ' ';
+    } else if (u[a] == '+' && u[b] == '+') {
+      u[b] = ' ';
+    } else if (u[a] == '-' && u[b] == '+') {
+      u[b] = ' ';
       // ~- unary:
-    } else if (inputStr[a] == '~' && inputStr[b] == '-') {
-      inputStr[b] = '~';
+    } else if (u[a] == '~' && u[b] == '-') {
+      u[b] = '~';
       // mod to %:
-    } else if (inputStr[a] == 'm' && inputStr[b] == 'o' && inputStr[c] == 'd') {
-      inputStr[a] = ' ';
-      inputStr[b] = ' ';
-      inputStr[c] = '%';
+    } else if (u[a] == 'm' && u[b] == 'o' && u[c] == 'd') {
+      u[a] = ' ';
+      u[b] = ' ';
+      u[c] = '%';
       // exit condition:
-    } else if (inputStr[a] == '\0') {
+    } else if (u[a] == '\0') {
       whileBreak = true;
     }
     a++;
     b++;
     c++;
+  }
+}
+
+int string_insert(char *str, int index, char *to_insert) {
+  int str_len = strlen(str), insert_len = strlen(to_insert), error_code = 0;
+  if (index < 0 || index > str_len) error_code = 1;
+  int result_len = str_len + insert_len;
+  if (result_len >= str_len) error_code = 2;
+  if (error_code == 0) {
+    char right_part[str_len - index + 1];
+    char left_part[index + 1];
+    right_part[0] = 0;
+    left_part[0] = 0;
+    strcpy(right_part, &str[index]);
+    strncpy(left_part, str, index);
+    left_part[index] = '\0';
+    strcat(left_part, to_insert);
+    strcat(left_part, right_part);
+    strcpy(str, left_part);
+  }
+  return error_code;
+}
+
+void TransformUnariesAndMod2(char *input) {
+  const char *replacement_map[][2] = {
+      {"--", " +"},   {"++", "+ "},  {"-+", "- "},  {"-+", "- "},
+      {"(-(", "(_("}, {"(-", "(#"},  {"(+", "( "},  {"/+", "/ "},
+      {"/+", "/ "},   {"*+", "* "},  {"/-", "/#"},  {"*-", "*#"},
+      {"^+", "^ "},   {"^-", "^#"},  {"%+", "% "},  {"%-", "%#"},
+      {"+-", "+#"},   {"+-", "+#"},  {"#-", " +"},  {"-#", " +"},
+      {"#-", "##"},   {"#-", "##"},  {")-", ")*-"}, {")(", ")*("},
+      {")0", ")*0"},  {")1", ")*1"}, {")2", ")*2"}, {")3", ")*3"},
+      {")4", ")*4"},  {")5", ")*5"}, {")6", ")*6"}, {")7", ")*7"},
+      {")8", ")*8"},  {")9", ")*9"}, {"0(", "0*("}, {"1(", "1*("},
+      {"2(", "2*("},  {"3(", "3*("}, {"4(", "4*("}, {"5(", "5*("},
+      {"6(", "6*("},  {"7(", "7*("}, {"8(", "8*("}, {"9(", "9*("},
+  };
+  for (int i = 0; i < sizeof(replacement_map) / sizeof(replacement_map[0]);
+       i++) {
+    char temp_str[4] = {0, input[i], input[i + 2], '\0', '\0'};
+    if (strlen(replacement_map[i][0] == 3)) temp_str[3] = input[i + 3];
+    if (strcmp(temp_str, replacement_map[i][0]) == 0) {
+      for (int j = 0; j < strlen(replacement_map[i][0]); ++j) {
+        input[i + j] = replacement_map[i][1][j];
+      }
+    }
   }
 }
 
@@ -792,3 +821,9 @@ void addMultSignsToBrackets(char *inputStr) {
 //   }
 //   strcpy(inputStr, tempStr);
 // }
+
+// enum calc_kAreBracketsValid {
+//   calc_kBracketsValid = 0,
+//   calc_kBracketsInvalid,
+//   calc_kNoBrackets,
+// };

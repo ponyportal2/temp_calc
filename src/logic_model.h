@@ -40,10 +40,12 @@
 
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
-void testCalculate(char *input, char *output, int dummy);
+void TestCalculate(char *input, char *output, int dummy);
 void UnlockCalculate();
 
 bool ContainsUnallowedTriples(const char *input_str);
+
+int Validation(const char *expression);
 
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view);
@@ -62,8 +64,8 @@ void threeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
                    char right[calc_kMaxStringSize], int start, int end);
 int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
 void CalcErrorMessage(int error_enum, char *error_message);
-int AreBracketsValid(char *inputStr);
-void transformUnariesAndMod(char *inputStr);
+bool AreBracketsValid(const char *inputStr);
+void TransformUnariesAndMod(char *inputStr);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
 long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
 void reverseString(char *string);
