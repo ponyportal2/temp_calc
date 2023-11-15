@@ -450,26 +450,19 @@ void TransformUnariesAndMod(char *in) {
   char temp_str[3] = {0};
   while (loop_break == false) {
     if (a == 0 && in[0] == '-' && in[1] == '(') {
-      // -( starting unary
-      vascpy(in, a, "_(");
+      vascpy(in, a, "_(");  // -( starting unary
     } else if (a == 0 && in[0] == '-' && in[1] == '-') {
-      // --starting unary
-      vascpy(in, a, "  ");
+      vascpy(in, a, "  ");  // -- starting unary
     } else if (a == 0 && in[0] == '-') {
-      // any other - starting unary:
-      vascpy(in, a, "~");
+      vascpy(in, a, "~");  // any other - starting unary:
     } else if (a == 0 && in[0] == '+') {
-      // + starting unary:
-      vascpy(in, a, "+");
-      // (-( simple negative reversion:
+      vascpy(in, a, "+");  // + starting unary:
     } else if (in[a] == '(' && in[b] == '-' && in[c] == '(') {
-      vascpy(in, a, "(_(");
-      // mod to %:
+      vascpy(in, a, "(_(");  // (-( simple negative reversion:
     } else if (in[a] == 'm' && in[b] == 'o' && in[c] == 'd') {
-      vascpy(in, a, "  %");
-      // (- (+ unary:
+      vascpy(in, a, "  %");  // mod to %:
     } else if (in[a] == '(' && in[b] == '-') {
-      in[b] = '~';
+      in[b] = '~';  // (- (+ unary:
     } else if (in[a] == '(' && in[b] == '+') {
       in[b] = ' ';
       // /+ *+ unary:

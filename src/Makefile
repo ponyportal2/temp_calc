@@ -85,7 +85,7 @@ dvi:
 
 test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV} 
 	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
-	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
+	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check -fsanitize=address
 	./test_check ${INPUT}
 
 gcov_report:
