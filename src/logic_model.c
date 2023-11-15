@@ -438,83 +438,83 @@ void DeleteBrackets(char *left, char *right) {
   }
 }
 
-void TransformUnariesAndMod(char *u) {
-  bool whileBreak = false;
+void vascpy(char *input, int position, char *what_to_copy) {
+  for (int i = 0; i < strlen(what_to_copy); ++i) {
+    input[position + i] = what_to_copy[i];
+  }
+}
+
+void TransformUnariesAndMod(char *in) {
+  bool loop_break = false;
   int a = 0, b = 1, c = 2;
-  while (whileBreak == false) {
-    if (a == 0 && u[0] == '-') {
-      // -( starting unary:
-      if (u[1] == '(') {
-        u[0] = '_';
-        // --starting unary:
-      } else if (u[1] == '-') {
-        u[0] = ' ';
-        u[1] = ' ';
-      } else {
-        // any other - starting unary:
-        u[0] = '~';
-      }
+  char temp_str[3] = {0};
+  while (loop_break == false) {
+    if (a == 0 && in[0] == '-' && in[1] == '(') {
+      // -( starting unary
+      vascpy(in, a, "_(");
+    } else if (a == 0 && in[0] == '-' && in[1] == '-') {
+      // --starting unary
+      vascpy(in, a, "  ");
+    } else if (a == 0 && in[0] == '-') {
+      // any other - starting unary:
+      vascpy(in, a, "~");
+    } else if (a == 0 && in[0] == '+') {
+      // + starting unary:
+      vascpy(in, a, "+");
       // (-( simple negative reversion:
-    } else if (u[a] == '(' && u[b] == '-' && u[c] == '(') {
-      u[b] = '_';
-      // (- (+ unary:
-    } else if (a == 0 && u[0] == '+') {
-      u[0] = ' ';
-      // (- (+ unary:
-    } else if (u[a] == '(' && u[b] == '-') {
-      u[b] = '~';
-    } else if (u[a] == '(' && u[b] == '+') {
-      u[b] = ' ';
-      // /+ *+ unary:
-    } else if (u[a] == '/' && u[b] == '+') {
-      u[b] = ' ';
-    } else if (u[a] == '*' && u[b] == '+') {
-      u[b] = ' ';
-      // /- *- unary:
-    } else if (u[a] == '/' && u[b] == '-') {
-      u[b] = '~';
-    } else if (u[a] == '*' && u[b] == '-') {
-      u[b] = '~';
-      // ^+ ^- unary:
-    } else if (u[a] == '^' && u[b] == '+') {
-      u[b] = ' ';
-    } else if (u[a] == '^' && u[b] == '-') {
-      u[b] = '~';
-      // %- %+ unary:
-    } else if (u[a] == '%' && u[b] == '+') {
-      u[b] = ' ';
-    } else if (u[a] == '%' && u[b] == '-') {
-      u[b] = '~';
-      // +- -- unary:
-    } else if (u[a] == '+' && u[b] == '-') {
-      u[b] = '~';
-      // weird --(~-) case:
-    } else if (u[a] == '~' && u[b] == '-') {
-      u[a] = ' ';
-      u[b] = '+';
-    } else if (u[a] == '-' && u[b] == '-') {  // ??
-      u[a] = ' ';
-      u[b] = '+';
-      // ++ -+ unary:
-    } else if (u[a] == '+' && u[b] == '+') {
-      u[b] = ' ';
-    } else if (u[a] == '-' && u[b] == '+') {
-      u[b] = ' ';
-      // ~- unary:
-    } else if (u[a] == '~' && u[b] == '-') {
-      u[b] = '~';
+    } else if (in[a] == '(' && in[b] == '-' && in[c] == '(') {
+      vascpy(in, a, "(_(");
       // mod to %:
-    } else if (u[a] == 'm' && u[b] == 'o' && u[c] == 'd') {
-      u[a] = ' ';
-      u[b] = ' ';
-      u[c] = '%';
+    } else if (in[a] == 'm' && in[b] == 'o' && in[c] == 'd') {
+      vascpy(in, a, "  %");
+      // (- (+ unary:
+    } else if (in[a] == '(' && in[b] == '-') {
+      in[b] = '~';
+    } else if (in[a] == '(' && in[b] == '+') {
+      in[b] = ' ';
+      // /+ *+ unary:
+    } else if (in[a] == '/' && in[b] == '+') {
+      in[b] = ' ';
+    } else if (in[a] == '*' && in[b] == '+') {
+      in[b] = ' ';
+      // /- *- unary:
+    } else if (in[a] == '/' && in[b] == '-') {
+      in[b] = '~';
+    } else if (in[a] == '*' && in[b] == '-') {
+      in[b] = '~';
+      // ^+ ^- unary:
+    } else if (in[a] == '^' && in[b] == '+') {
+      in[b] = ' ';
+    } else if (in[a] == '^' && in[b] == '-') {
+      in[b] = '~';
+      // %- %+ unary:
+    } else if (in[a] == '%' && in[b] == '+') {
+      in[b] = ' ';
+    } else if (in[a] == '%' && in[b] == '-') {
+      in[b] = '~';
+      // +- -- unary:
+    } else if (in[a] == '+' && in[b] == '-') {
+      in[b] = '~';
+      // weird --(~-) case:
+    } else if (in[a] == '~' && in[b] == '-') {
+      in[a] = ' ';
+      in[b] = '+';
+    } else if (in[a] == '-' && in[b] == '-') {  // ??
+      in[a] = ' ';
+      in[b] = '+';
+      // ++ -+ unary:
+    } else if (in[a] == '+' && in[b] == '+') {
+      in[b] = ' ';
+    } else if (in[a] == '-' && in[b] == '+') {
+      in[b] = ' ';
+      // ~- unary:
+    } else if (in[a] == '~' && in[b] == '-') {
+      in[b] = '~';
       // exit condition:
-    } else if (u[a] == '\0') {
-      whileBreak = true;
+    } else if (in[a] == '\0') {
+      loop_break = true;
     }
-    a++;
-    b++;
-    c++;
+    ++a, ++b, ++c;
   }
 }
 
@@ -537,32 +537,69 @@ int string_insert(char *str, int index, char *to_insert) {
   }
   return error_code;
 }
+// otdelno
+// {"(-(", "(_("}
+// otdelno
+// {")-", ")*-"}, {")(", ")*("}, {")0", ")*0"},
+//       {")1", ")*1"}, {")2", ")*2"}, {")3", ")*3"}, {")4", ")*4"}, {")5",
+//       ")*5"},
+//       {")6", ")*6"}, {")7", ")*7"}, {")8", ")*8"}, {")9", ")*9"}, {"0(",
+//       "0*("},
+//       {"1(", "1*("}, {"2(", "2*("}, {"3(", "3*("}, {"4(", "4*("}, {"5(",
+//       "5*("},
+//       {"6(", "6*("}, {"7(", "7*("}, {"8(", "8*("}, {"9(", "9*("}
 
-void TransformUnariesAndMod2(char *input) {
-  const char *replacement_map[][2] = {
-      {"--", " +"},   {"++", "+ "},  {"-+", "- "},  {"-+", "- "},
-      {"(-(", "(_("}, {"(-", "(#"},  {"(+", "( "},  {"/+", "/ "},
-      {"/+", "/ "},   {"*+", "* "},  {"/-", "/#"},  {"*-", "*#"},
-      {"^+", "^ "},   {"^-", "^#"},  {"%+", "% "},  {"%-", "%#"},
-      {"+-", "+#"},   {"+-", "+#"},  {"#-", " +"},  {"-#", " +"},
-      {"#-", "##"},   {"#-", "##"},  {")-", ")*-"}, {")(", ")*("},
-      {")0", ")*0"},  {")1", ")*1"}, {")2", ")*2"}, {")3", ")*3"},
-      {")4", ")*4"},  {")5", ")*5"}, {")6", ")*6"}, {")7", ")*7"},
-      {")8", ")*8"},  {")9", ")*9"}, {"0(", "0*("}, {"1(", "1*("},
-      {"2(", "2*("},  {"3(", "3*("}, {"4(", "4*("}, {"5(", "5*("},
-      {"6(", "6*("},  {"7(", "7*("}, {"8(", "8*("}, {"9(", "9*("},
-  };
-  for (int i = 0; i < sizeof(replacement_map) / sizeof(replacement_map[0]);
-       i++) {
-    char temp_str[4] = {0, input[i], input[i + 2], '\0', '\0'};
-    if (strlen(replacement_map[i][0] == 3)) temp_str[3] = input[i + 3];
-    if (strcmp(temp_str, replacement_map[i][0]) == 0) {
-      for (int j = 0; j < strlen(replacement_map[i][0]); ++j) {
-        input[i + j] = replacement_map[i][1][j];
-      }
-    }
-  }
-}
+// void TransformUnariesAndMod(char *input) {
+//   char before[calc_kMaxStringSize] = {0};
+//   do {
+//     strcpy(before, input);
+//     if (input[0] == '+' && strlen(input) > 0) input[0] = ' ';
+//     if (strlen(input) >= 2 && input[0] == '-') {
+//       if (input[1] == '-') {
+//         input[0] = ' ';
+//         input[1] = ' ';
+//       } else if (input[1] == '(') {
+//         input[0] = '_';
+//       } else {
+//         input[0] = '~';
+//       }
+//     }
+//     const char *map_pair[][2] = {
+//         {"++", "+ "}, {"-+", "- "}, {"-+", "- "},       {"(-", "(~"},
+//         {"(+", "( "}, {"/+", "/ "}, {"/+", "/ "},       {"*+", "* "},
+//         {"/-", "/~"}, {"*-", "*~"}, {"^+", "^ "},       {"^-", "^~"},
+//         {"%+", "% "}, {"%-", "%~"}, {"+-", "+~"},       {"+-", "+~"},
+//         {"-~", " +"}, {"~-", "~~"}, /*?*/ {"--", " +"},
+//     };
+//     const char *map_tri[][3] = {
+//         {"(-(", "(_("},
+//         {"mod", "  %"},
+//     };
+//     char temp_str[4] = {0};
+//     for (int i = 0; i <= strlen(input) && strlen(input) >= 2; ++i) {
+//       temp_str[0] = input[i];
+//       temp_str[1] = input[i + 1];
+//       for (int j = 0; j < sizeof(map_pair) / sizeof(map_pair[0]); ++j) {
+//         if (strcmp(temp_str, map_pair[i][0]) == 0) {
+//           input[i] = map_pair[j][1][0];
+//           input[i + 1] = map_pair[j][1][1];
+//         }
+//       }
+//       temp_str[2] = input[i + 2];
+//       for (int j = 0; j < sizeof(map_tri) / sizeof(map_tri[0]); ++j) {
+//         if (strcmp(temp_str, map_tri[i][0]) == 0) {
+//           input[i] = map_tri[j][1][0];
+//           input[i + 1] = map_tri[j][1][1];
+//           input[i + 2] = map_tri[j][1][2];
+//         }
+//       }
+//       strcpy(temp_str, "");
+//     }
+//     cleanUpSpaces(input);
+//   } while (strcmp(input, before) != 0);
+// }
+
+// TODO another function, but for * between and after/before brackets
 
 int operatorCount(char *inputStr) {
   char *toMatch = "+-*/^%";

@@ -31,6 +31,12 @@ const char* calc_kSolverDefaultText =
     "field";
 const char* calc_kOutputDefaultText = "Output will be here";
 
+typedef struct pixel_t {
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
+} pixel;
+
 int main() {
   InitWindow(calc_kScreenWidth, calc_kScreenHeight, "SmartCalc");
   SetExitKey(0);
@@ -61,8 +67,10 @@ int main() {
   bool input_box_edit_mode = false;
   bool x_box_edit_mode = false;
   bool solver_box_edit_mode = false;
+
   // MAIN LOOP:
   while (!exit_window) {  // Will detect window close button or ESC
+
     if (quake_counter > 0) {
       q = rand() % 40 - 20;
       quake_counter--;
