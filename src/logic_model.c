@@ -202,7 +202,7 @@ void Calculate(view_to_calc_struct view_to_calc,
     int expression_error = Validation(expression);
     if (expression_error == calcerr_kNoError) {
       TransformUnariesAndMod(expression);
-      cleanUpSpaces(expression);
+      CleanUpSpaces(expression);
       addMultSignsToBrackets(expression);
       addOuterBrackets(expression);
       int start = UNINIT, end = UNINIT, bracketsError = 0;
@@ -250,7 +250,7 @@ void Calculate(view_to_calc_struct view_to_calc,
         strcpy(calc_to_view.answer, "-inf");
       } else {
         sprintfHelper(calc_to_view.answer, strtod(expression, NULL));
-        cleanUpSpaces(calc_to_view.answer);
+        CleanUpSpaces(calc_to_view.answer);
         cleanUpTrailingZeroes(calc_to_view.answer);
       }
       printf("\nTHE ANSWER:%s\n", calc_to_view.answer);
@@ -444,73 +444,57 @@ void vascpy(char *input, int position, char *what_to_copy) {
   }
 }
 
-void TransformUnariesAndMod(char *in) {
-  bool loop_break = false;
-  int a = 0, b = 1, c = 2;
-  char temp_str[3] = {0};
-  while (loop_break == false) {
-    if (a == 0 && in[0] == '-' && in[1] == '(') {
-      vascpy(in, a, "_(");  // -( starting unary
-    } else if (a == 0 && in[0] == '-' && in[1] == '-') {
-      vascpy(in, a, "  ");  // -- starting unary
-    } else if (a == 0 && in[0] == '-') {
-      vascpy(in, a, "~");  // any other - starting unary:
-    } else if (a == 0 && in[0] == '+') {
-      vascpy(in, a, "+");  // + starting unary:
-    } else if (in[a] == '(' && in[b] == '-' && in[c] == '(') {
-      vascpy(in, a, "(_(");  // (-( simple negative reversion:
-    } else if (in[a] == 'm' && in[b] == 'o' && in[c] == 'd') {
-      vascpy(in, a, "  %");  // mod to %:
-    } else if (in[a] == '(' && in[b] == '-') {
-      in[b] = '~';  // (- (+ unary:
-    } else if (in[a] == '(' && in[b] == '+') {
-      in[b] = ' ';
-      // /+ *+ unary:
-    } else if (in[a] == '/' && in[b] == '+') {
-      in[b] = ' ';
-    } else if (in[a] == '*' && in[b] == '+') {
-      in[b] = ' ';
-      // /- *- unary:
-    } else if (in[a] == '/' && in[b] == '-') {
-      in[b] = '~';
-    } else if (in[a] == '*' && in[b] == '-') {
-      in[b] = '~';
-      // ^+ ^- unary:
-    } else if (in[a] == '^' && in[b] == '+') {
-      in[b] = ' ';
-    } else if (in[a] == '^' && in[b] == '-') {
-      in[b] = '~';
-      // %- %+ unary:
-    } else if (in[a] == '%' && in[b] == '+') {
-      in[b] = ' ';
-    } else if (in[a] == '%' && in[b] == '-') {
-      in[b] = '~';
-      // +- -- unary:
-    } else if (in[a] == '+' && in[b] == '-') {
-      in[b] = '~';
-      // weird --(~-) case:
-    } else if (in[a] == '~' && in[b] == '-') {
-      in[a] = ' ';
-      in[b] = '+';
-    } else if (in[a] == '-' && in[b] == '-') {  // ??
-      in[a] = ' ';
-      in[b] = '+';
-      // ++ -+ unary:
-    } else if (in[a] == '+' && in[b] == '+') {
-      in[b] = ' ';
-    } else if (in[a] == '-' && in[b] == '+') {
-      in[b] = ' ';
-      // ~- unary:
-    } else if (in[a] == '~' && in[b] == '-') {
-      in[b] = '~';
-      // exit condition:
-    } else if (in[a] == '\0') {
-      loop_break = true;
+void vasreplace(char *input, char *what_to_find, char *to_replace) {
+  int what_to_find_len = strlen(what_to_find);
+  char *temp_str = calloc(what_to_find_len + 1, sizeof(char));
+  for (int i = 0; i < strlen(input); ++i) {
+    strncpy(temp_str, input + i, what_to_find_len);
+    if (!strcmp(temp_str, what_to_find)) {
+      vascpy(input, i, to_replace);
     }
-    ++a, ++b, ++c;
   }
+  free(temp_str);
 }
 
+void TransformUnariesAndMod(char *input) {
+  char before[calc_kMaxStringSize] = {0};
+  do {
+    strcpy(before, input);
+    if (input[0] == '-' && input[1] == '(') {
+      vascpy(input, 0, "_(");  // -( starting unary
+    } else if (input[0] == '-' && input[1] == '-') {
+      vascpy(input, 0, "  ");  // -- starting unary
+    } else if (input[0] == '-') {
+      vascpy(input, 0, "~");  // any other - starting unary:
+    } else if (input[0] == '+') {
+      vascpy(input, 0, " ");  // + starting unary:
+    }
+
+    vasreplace(input, "(-(", "(_(");
+    vasreplace(input, "mod", "  %");
+
+    vasreplace(input, "++", "+ ");
+    vasreplace(input, "-+", "- ");
+
+    vasreplace(input, "+-", "+~");
+    vasreplace(input, "~-", " +");  // ??
+    vasreplace(input, "--", " +");  // ??
+                                    // simple replacements:
+    vasreplace(input, "(+", "( ");
+    vasreplace(input, "(-", "(~");
+    vasreplace(input, "/+", "/ ");
+    vasreplace(input, "/-", "/~");
+    vasreplace(input, "*+", "* ");
+    vasreplace(input, "*-", "*~");
+    vasreplace(input, "^+", "^ ");
+    vasreplace(input, "^-", "^~");
+    vasreplace(input, "%+", "% ");
+    vasreplace(input, "%-", "%~");
+    CleanUpSpaces(input);
+  } while (strcmp(before, input) != 0);
+}
+
+// ??????
 int string_insert(char *str, int index, char *to_insert) {
   int str_len = strlen(str), insert_len = strlen(to_insert), error_code = 0;
   if (index < 0 || index > str_len) error_code = 1;

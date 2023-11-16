@@ -2,18 +2,17 @@
 
 #include <stdio.h>
 
-void cleanUpSpaces(char *inputStr) {
-  char tempStr[VASLIBTHESIZE] = {0};
-  int i = 0;
-  int j = 0;
-  while (inputStr[i] != '\0') {
-    if (inputStr[i] != ' ' && inputStr[i] != '\n' && inputStr[i] != '\t') {
-      tempStr[j] = inputStr[i];
+void CleanUpSpaces(char *input_str) {
+  char temp_str[vaslib_kSize] = {0};
+  int i = 0, j = 0;
+  while (input_str[i] != '\0') {
+    if (input_str[i] != ' ' && input_str[i] != '\n' && input_str[i] != '\t') {
+      temp_str[j] = input_str[i];
       j++;
     }
     i++;
   }
-  strcpy(inputStr, tempStr);
+  strcpy(input_str, temp_str);
 }
 
 void cleanUpTrailingZeroes(char *inputStr) {
@@ -41,7 +40,7 @@ int count_of_chars(char *inputStr, char *toFind) {
 }
 
 void reverseString(char *string) {
-  char temp[VASLIBTHESIZE] = {0};
+  char temp[vaslib_kSize] = {0};
   strcpy(temp, string);
   int length = strlen(string);
   int i = 0;
@@ -60,10 +59,10 @@ bool char_match(char char_to_match, const char *char_array_to_match) {
   }
   return match;
 }
-void threeWaySplit(char *inputStr, char left[VASLIBTHESIZE],
-                   char middle[VASLIBTHESIZE], char right[VASLIBTHESIZE],
+void threeWaySplit(char *inputStr, char left[vaslib_kSize],
+                   char middle[vaslib_kSize], char right[vaslib_kSize],
                    int start, int end) {
-  char tempStr[VASLIBTHESIZE] = {0};
+  char tempStr[vaslib_kSize] = {0};
   if (start > -1) {
     strncpy(left, inputStr, start + 1);
   }
