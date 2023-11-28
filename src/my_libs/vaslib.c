@@ -2,20 +2,7 @@
 
 #include <stdio.h>
 
-void CleanUpSpaces(char *input_str) {
-  char temp_str[vaslib_kSize] = {0};
-  int i = 0, j = 0;
-  while (input_str[i] != '\0') {
-    if (input_str[i] != ' ' && input_str[i] != '\n' && input_str[i] != '\t') {
-      temp_str[j] = input_str[i];
-      j++;
-    }
-    i++;
-  }
-  strcpy(input_str, temp_str);
-}
-
-void cleanUpTrailingZeroes(char *inputStr) {
+void VasCleanUpTrailingZeroes(char *inputStr) {
   int i = strlen(inputStr) - 1;
   bool whileBreak = false;
   if (char_match('.', inputStr) == true) {
@@ -30,7 +17,7 @@ void cleanUpTrailingZeroes(char *inputStr) {
   }
 }
 
-int count_of_chars(char *inputStr, char *toFind) {
+int VasCountOfChars(char *inputStr, char *toFind) {
   int counter = 0, i = 0;
   while (inputStr[i] != '\0') {
     if (char_match(inputStr[i], toFind)) counter++;
@@ -39,46 +26,17 @@ int count_of_chars(char *inputStr, char *toFind) {
   return counter;
 }
 
-void reverseString(char *string) {
-  char temp[vaslib_kSize] = {0};
-  strcpy(temp, string);
-  int length = strlen(string);
-  int i = 0;
-  for (; i < length; i++) string[i] = temp[length - i - 1];
-  string[i] = '\0';
-}
-
-bool char_match(char char_to_match, const char *char_array_to_match) {
-  bool match = false;
-  int i = 0;
-  while (char_array_to_match[i] != '\0') {
-    if (char_array_to_match[i] == char_to_match) {
-      match = true;
-    }
-    ++i;
-  }
-  return match;
-}
-void threeWaySplit(char *inputStr, char left[vaslib_kSize],
+void ThreeWaySplit(char *input_str, char left[vaslib_kSize],
                    char middle[vaslib_kSize], char right[vaslib_kSize],
                    int start, int end) {
-  char tempStr[vaslib_kSize] = {0};
-  if (start > -1) {
-    strncpy(left, inputStr, start + 1);
-  }
-  strncpy(middle, inputStr + start + 1, end - start - 1);
-  if (end < (int)strlen(inputStr)) {
-    strcpy(right, inputStr + start + (end - start));
-  }
-  strcpy(inputStr, tempStr);
-}
+  char temp_str[vaslib_kSize] = {0};
+  if (start > -1 && start < end && end < strlen(input_str)) {
+    strncpy(left, input_str, start + 1);
 
-int findAndReplaceChar(char *inputStr, char *toFind, char toReplace) {
-  int counter = 0;
-  int i = 0;
-  while (inputStr[i] != '\0') {
-    if (char_match(inputStr[i], toFind)) inputStr[i] = toReplace;
-    i++;
+    strncpy(middle, input_str + start + 1, end - start - 1);
+    if (end < (int)strlen(input_str)) {
+      strcpy(right, input_str + start + (end - start));
+    }
+    strcpy(input_str, temp_str);
   }
-  return counter;
 }

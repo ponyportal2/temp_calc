@@ -14,8 +14,6 @@
 // #include <unistd.h>
 #endif
 
-#include "my_libs/vaslib.h"
-
 #define STR_(X) #X
 #define STR(X) STR_(X)
 
@@ -40,6 +38,9 @@
 
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
+void ThreeWaySplit(char *input_str, char left[calc_kMaxStringSize],
+                   char middle[calc_kMaxStringSize],
+                   char right[calc_kMaxStringSize], int start, int end);
 void TestCalculate(char *input, char *output, int dummy);
 void UnlockCalculate();
 
@@ -59,17 +60,15 @@ void ReplaceX(char *input_str, const char *input_x);
 void addMultSignsToBrackets(char *inputStr);
 void printHelper(char *inputStr);
 void sprintfHelper(char *tempStr, long double calcResult);
-void threeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
+void ThreeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
                    char middle[calc_kMaxStringSize],
                    char right[calc_kMaxStringSize], int start, int end);
 int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
 void CalcErrorMessage(int error_enum, char *error_message);
 bool AreBracketsValid(const char *inputStr);
-void vasreplace(char *input, char *what_to_find, char *to_replace);
-void TransformUnariesAndMod(char *inputStr);
+void TransformUnariesModAndSpaces(char *inputStr);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
 long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
-void reverseString(char *string);
 int parseAndApplyOperators(char *midStr);
 void ourGcvt(long double value, char *buf, int ndigit);
 bool zeroZeroes(char *str);
@@ -84,10 +83,7 @@ bool doesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);
-void vascpy(char *input, int position, char *what_to_copy);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);
-int count_of_chars(char *inputStr, char *toFind);
-int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
 int unfoldBrackets(char *inputStr, int startIn, int endIn);
 long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
                         bool isLeft);

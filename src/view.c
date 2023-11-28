@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "my_libs/vaslib.h"
 #include "style_dark.h"
 
 #ifdef CALC_MEME

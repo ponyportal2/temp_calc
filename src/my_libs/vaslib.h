@@ -7,14 +7,14 @@
 void printStrCharByChar(char *inputStr);
 void CleanUpSpaces(char *inputStr);
 void nullCharArray(char *inputStr);
-int count_of_chars(char *inputStr, char *toFind);
-int findAndReplaceChar(char *inputStr, char *toFind, char toReplace);
-void reverseString(char *string);
+int VasCountOfChars(char *inputStr, char *toFind);
+int VasFindAndReplaceChar(char *inputStr, char *toFind, char toReplace);
+void VasReverseCharArray(char *string);
 bool char_match(char inputChar, const char *inputCharArr);
-void cleanUpTrailingZeroes(char *inputStr);
+void VasCleanUpTrailingZeroes(char *inputStr);
 void SplitInHalf(char *inputStr, char left[vaslib_kSize],
                  char right[vaslib_kSize], int splitPos);
-void threeWaySplit(char *inputStr, char left[vaslib_kSize],
+void ThreeWaySplit(char *inputStr, char left[vaslib_kSize],
                    char middle[vaslib_kSize], char right[vaslib_kSize],
                    int start, int end);
 long double vasFabs(long double x);

@@ -1,5 +1,8 @@
 #include "logic_model.h"
 
+#include "vaslib.h"
+// TODO: DOUBLE DOT
+
 enum calc_CalculationError {
   calcerr_kNoError = 0,
   calcerr_kDivisionByZero,
@@ -141,7 +144,7 @@ bool ContainsInvalidCharacters(const char *input_str) {
       "0123456789 +-*/% . ( ) cos sin tan acos asin atan sqrt ln log ^ e mod ~";
   bool it_does = false;
   for (int i = 0; input_str[i] != '\0'; ++i) {
-    if (char_match(input_str[i], kAllowedCharacters) == 0) {
+    if (VasCharMatch(input_str[i], kAllowedCharacters) == 0) {
       it_does = true;
     }
   }
@@ -156,7 +159,7 @@ bool ContainsUnallowedRepeatingChars(const char *input_str) {
     if (i != 0) {
       char current_char = input_str[i];
       if (current_char == previous_char &&
-          char_match(input_str[i], kUnallowedRepeating)) {
+          VasCharMatch(input_str[i], kUnallowedRepeating)) {
         it_does = true;
         loop_break = true;
       }
@@ -201,8 +204,8 @@ void Calculate(view_to_calc_struct view_to_calc,
     strcpy(expression, view_to_calc.calc_input);
     int expression_error = Validation(expression);
     if (expression_error == calcerr_kNoError) {
-      TransformUnariesAndMod(expression);
-      CleanUpSpaces(expression);
+      printf(">>%s<<\n", expression);
+      TransformUnariesModAndSpaces(expression);
       addMultSignsToBrackets(expression);
       addOuterBrackets(expression);
       int start = UNINIT, end = UNINIT, bracketsError = 0;
@@ -216,7 +219,7 @@ void Calculate(view_to_calc_struct view_to_calc,
              right[calc_kMaxStringSize] = {0};
         bracketsError = findDeepestBrackets(expression, &start, &end);
         if (bracketsError == 0) {
-          threeWaySplit(expression, left, middle, right, start, end);
+          ThreeWaySplit(expression, left, middle, right, start, end);
           // printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
           expression_error = parseAndApplyOperators(middle);
           if (expression_error != 0) loop_break = true;
@@ -250,8 +253,8 @@ void Calculate(view_to_calc_struct view_to_calc,
         strcpy(calc_to_view.answer, "-inf");
       } else {
         sprintfHelper(calc_to_view.answer, strtod(expression, NULL));
-        CleanUpSpaces(calc_to_view.answer);
-        cleanUpTrailingZeroes(calc_to_view.answer);
+        VasCleanUpSpaces(calc_to_view.answer);
+        VasCleanUpTrailingZeroes(calc_to_view.answer);
       }
       printf("\nTHE ANSWER:%s\n", calc_to_view.answer);
     } else {
@@ -339,7 +342,7 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
   char right[calc_kMaxStringSize] = {0};
   char tempStr[calc_kMaxStringSize] = {0};
   int err = 0;  // error for the return
-  threeWaySplit(inputStr, left, middle, right, startIn, endIn);
+  ThreeWaySplit(inputStr, left, middle, right, startIn, endIn);
   if (oper == BR_OPER_MINUS) {
     if (middle[0] == '~') {
       strcpy(tempStr, (char *)middle + 1);
@@ -438,82 +441,44 @@ void DeleteBrackets(char *left, char *right) {
   }
 }
 
-void vascpy(char *input, int position, char *what_to_copy) {
-  for (int i = 0; i < strlen(what_to_copy); ++i) {
-    input[position + i] = what_to_copy[i];
-  }
-}
-
-void vasreplace(char *input, char *what_to_find, char *to_replace) {
-  int what_to_find_len = strlen(what_to_find);
-  char *temp_str = calloc(what_to_find_len + 1, sizeof(char));
-  for (int i = 0; i < strlen(input); ++i) {
-    strncpy(temp_str, input + i, what_to_find_len);
-    if (!strcmp(temp_str, what_to_find)) {
-      vascpy(input, i, to_replace);
-    }
-  }
-  free(temp_str);
-}
-
-void TransformUnariesAndMod(char *input) {
+void TransformUnariesModAndSpaces(char *input) {
   char before[calc_kMaxStringSize] = {0};
   do {
     strcpy(before, input);
     if (input[0] == '-' && input[1] == '(') {
-      vascpy(input, 0, "_(");  // -( starting unary
+      VasCpy(input, 0, "_(");  // -( starting unary
     } else if (input[0] == '-' && input[1] == '-') {
-      vascpy(input, 0, "  ");  // -- starting unary
+      VasCpy(input, 0, "  ");  // -- starting unary
     } else if (input[0] == '-') {
-      vascpy(input, 0, "~");  // any other - starting unary:
+      VasCpy(input, 0, "~");  // any other - starting unary:
     } else if (input[0] == '+') {
-      vascpy(input, 0, " ");  // + starting unary:
+      VasCpy(input, 0, " ");  // + starting unary:
     }
 
-    vasreplace(input, "(-(", "(_(");
-    vasreplace(input, "mod", "  %");
+    VasReplace(input, "(-(", "(_(");
+    VasReplace(input, "mod", "  %");
 
-    vasreplace(input, "++", "+ ");
-    vasreplace(input, "-+", "- ");
+    VasReplace(input, "++", "+ ");
+    VasReplace(input, "-+", "- ");
 
-    vasreplace(input, "+-", "+~");
-    vasreplace(input, "~-", " +");  // ??
-    vasreplace(input, "--", " +");  // ??
+    VasReplace(input, "+-", "+~");
+    VasReplace(input, "~-", " +");  // ??
+    VasReplace(input, "--", " +");  // ??
                                     // simple replacements:
-    vasreplace(input, "(+", "( ");
-    vasreplace(input, "(-", "(~");
-    vasreplace(input, "/+", "/ ");
-    vasreplace(input, "/-", "/~");
-    vasreplace(input, "*+", "* ");
-    vasreplace(input, "*-", "*~");
-    vasreplace(input, "^+", "^ ");
-    vasreplace(input, "^-", "^~");
-    vasreplace(input, "%+", "% ");
-    vasreplace(input, "%-", "%~");
-    CleanUpSpaces(input);
+    VasReplace(input, "(+", "( ");
+    VasReplace(input, "(-", "(~");
+    VasReplace(input, "/+", "/ ");
+    VasReplace(input, "/-", "/~");
+    VasReplace(input, "*+", "* ");
+    VasReplace(input, "*-", "*~");
+    VasReplace(input, "^+", "^ ");
+    VasReplace(input, "^-", "^~");
+    VasReplace(input, "%+", "% ");
+    VasReplace(input, "%-", "%~");
+    VasCleanUpSpaces(input);
   } while (strcmp(before, input) != 0);
 }
 
-// ??????
-int string_insert(char *str, int index, char *to_insert) {
-  int str_len = strlen(str), insert_len = strlen(to_insert), error_code = 0;
-  if (index < 0 || index > str_len) error_code = 1;
-  int result_len = str_len + insert_len;
-  if (result_len >= str_len) error_code = 2;
-  if (error_code == 0) {
-    char right_part[str_len - index + 1];
-    char left_part[index + 1];
-    right_part[0] = 0;
-    left_part[0] = 0;
-    strcpy(right_part, &str[index]);
-    strncpy(left_part, str, index);
-    left_part[index] = '\0';
-    strcat(left_part, to_insert);
-    strcat(left_part, right_part);
-    strcpy(str, left_part);
-  }
-  return error_code;
-}
 // otdelno
 // {"(-(", "(_("}
 // otdelno
@@ -572,7 +537,7 @@ int string_insert(char *str, int index, char *to_insert) {
 //       }
 //       strcpy(temp_str, "");
 //     }
-//     cleanUpSpaces(input);
+//     VasCleanUpSpaces(input);
 //   } while (strcmp(input, before) != 0);
 // }
 
@@ -583,7 +548,7 @@ int operatorCount(char *inputStr) {
   int i = 0;
   int operatorCounter = 0;
   while (inputStr[i] != '\0') {
-    if (char_match(inputStr[i], toMatch) == true) {
+    if (VasCharMatch(inputStr[i], toMatch) == true) {
       operatorCounter++;
     }
     i++;
@@ -627,10 +592,10 @@ long double getLRDigits(char *input, int oper_position, int *digits_end,
     if (!is_left) i++;
 
     if (i < 0 || i == (int)strlen(input) || input[i] == '\0') loop_break = true;
-    if (char_match(input[i], to_match) != true) loop_break = true;
+    if (VasCharMatch(input[i], to_match) != true) loop_break = true;
   }
   *digits_end = i;
-  if (is_left) reverseString(final_number);
+  if (is_left) VasReverseCharArray(final_number);
   // printf("final number:%s\n", final_number);
   return strtod(final_number, NULL);
 }
@@ -647,11 +612,11 @@ int parseAndApplyOperators(char *midStr) {
     if (err != 0) break;
     err = operatorPassLoop(midStr, "%");
     if (err != 0) break;
-    while (count_of_chars(midStr, "-") != 0) {
+    while (VasCountOfChars(midStr, "-") != 0) {
       // using just this instead of transformUnariesAndMod:
       if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '~';
-      if (count_of_chars(midStr, "~") == 1 && midStr[0] != '~') {
-        findAndReplaceChar(midStr, "~", '-');
+      if (VasCountOfChars(midStr, "~") == 1 && midStr[0] != '~') {
+        VasFindAndReplaceChar(midStr, "~", '-');
       }
       err = operatorPass(midStr, '-');
       if (err != 0) break;
@@ -668,7 +633,7 @@ int parseAndApplyOperators(char *midStr) {
 int operatorPassLoop(char *inputMid, char *opChar) {
   int err = 0;
   bool whileBreak = false;
-  while (count_of_chars(inputMid, opChar) != 0 && whileBreak == false) {
+  while (VasCountOfChars(inputMid, opChar) != 0 && whileBreak == false) {
     err = operatorPass(inputMid, opChar[0]);
     if (err) whileBreak = true;
   }
@@ -730,7 +695,7 @@ int operatorPass(char *inputMid, char opChar) {
         char left[calc_kMaxStringSize] = {0};
         char middle[calc_kMaxStringSize] = {0};
         char right[calc_kMaxStringSize] = {0};
-        threeWaySplit(inputMid, left, middle, right, resultStart, resultEnd);
+        ThreeWaySplit(inputMid, left, middle, right, resultStart, resultEnd);
         strcpy(inputMid, left);
         strcat(inputMid, sprintfResult);
         strcat(inputMid, right);
@@ -754,6 +719,22 @@ void sprintfHelper(char *tempStr, long double longDoubleInput) {
   sprintf(tempStr, "%." STR(SPRINTF_PRECISION) "Lf", longDoubleInput);  // MAC
 }
 
+// TODO Optimize: this function
+void ThreeWaySplit(char *input_str, char left[calc_kMaxStringSize],
+                   char middle[calc_kMaxStringSize],
+                   char right[calc_kMaxStringSize], int start, int end) {
+  char temp_str[calc_kMaxStringSize] = {0};
+  if (start > -1 && start < end && end < strlen(input_str)) {
+    strncpy(left, input_str, start + 1);
+
+    strncpy(middle, input_str + start + 1, end - start - 1);
+    if (end < (int)strlen(input_str)) {
+      strcpy(right, input_str + start + (end - start));
+    }
+    strcpy(input_str, temp_str);
+  }
+}
+
 bool isJustANumber(char *inputStr) {
   char toMatch[calc_kMaxStringSize] = "0123456789. inf";
   int i = 0;
@@ -762,7 +743,7 @@ bool isJustANumber(char *inputStr) {
     if (inputStr[0] == '-' || inputStr[0] == '~') i = 1;
     bool whileBreak = false;
     while (whileBreak == false && inputStr[i] != '\0') {
-      if (char_match(inputStr[i], toMatch) == false) {
+      if (VasCharMatch(inputStr[i], toMatch) == false) {
         bIsJustANumber = false;
         whileBreak = true;
       }
@@ -782,9 +763,9 @@ void addMultSignsToBrackets(char *inputStr) {
   char *toMatch = "0123456789.";
   while (inputStr[i] != '\0') {
     bool leftBracketCondition =
-        inputStr[i] == ')' && char_match(inputStr[i + 1], toMatch);
+        inputStr[i] == ')' && VasCharMatch(inputStr[i + 1], toMatch);
     bool rightBracketCondition =
-        inputStr[i + 1] == '(' && char_match(inputStr[i], toMatch);
+        inputStr[i + 1] == '(' && VasCharMatch(inputStr[i], toMatch);
     if (leftBracketCondition == true || rightBracketCondition == true) {
       SplitInHalf(inputStr, left, right, i);
       strcpy(tempStr, left);
