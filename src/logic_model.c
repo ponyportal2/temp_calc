@@ -724,15 +724,14 @@ void ThreeWaySplit(char *input_str, char left[calc_kMaxStringSize],
                    char middle[calc_kMaxStringSize],
                    char right[calc_kMaxStringSize], int start, int end) {
   char temp_str[calc_kMaxStringSize] = {0};
-  if (start > -1 && start < end && end < strlen(input_str)) {
+  if (start > -1) {
     strncpy(left, input_str, start + 1);
-
-    strncpy(middle, input_str + start + 1, end - start - 1);
-    if (end < (int)strlen(input_str)) {
-      strcpy(right, input_str + start + (end - start));
-    }
-    strcpy(input_str, temp_str);
   }
+  strncpy(middle, input_str + start + 1, end - start - 1);
+  if (end < (int)strlen(input_str)) {
+    strcpy(right, input_str + start + (end - start));
+  }
+  strcpy(input_str, temp_str);
 }
 
 bool isJustANumber(char *inputStr) {

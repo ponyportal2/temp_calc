@@ -29,14 +29,13 @@ int VasCountOfChars(char *inputStr, char *toFind) {
 void ThreeWaySplit(char *input_str, char left[vaslib_kSize],
                    char middle[vaslib_kSize], char right[vaslib_kSize],
                    int start, int end) {
-  char temp_str[vaslib_kSize] = {0};
-  if (start > -1 && start < end && end < strlen(input_str)) {
-    strncpy(left, input_str, start + 1);
-
-    strncpy(middle, input_str + start + 1, end - start - 1);
-    if (end < (int)strlen(input_str)) {
-      strcpy(right, input_str + start + (end - start));
-    }
-    strcpy(input_str, temp_str);
+  char tempStr[vaslib_kSize] = {0};
+  if (start > -1) {
+    strncpy(left, inputStr, start + 1);
   }
+  strncpy(middle, inputStr + start + 1, end - start - 1);
+  if (end < (int)strlen(inputStr)) {
+    strcpy(right, inputStr + start + (end - start));
+  }
+  strcpy(inputStr, tempStr);
 }
