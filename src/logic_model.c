@@ -616,7 +616,7 @@ int parseAndApplyOperators(char *midStr) {
       // using just this instead of transformUnariesAndMod:
       if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '~';
       if (VasCountOfChars(midStr, "~") == 1 && midStr[0] != '~') {
-        VasFindAndReplaceChar(midStr, "~", '-');
+        VasReplace(midStr, "~", "-");
       }
       err = operatorPass(midStr, '-');
       if (err != 0) break;

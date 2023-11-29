@@ -6,25 +6,24 @@
 
 #define vas_kMaxStringSize 16384
 
-void VasCpy(char *input, int position, char *what_to_copy);
-void VasInsert(char *input, int position, char *what_to_copy);
-void VasReplace(char *input, char *what_to_find, char *to_replace);
+void VasCpy(char *input, const int position, const char *what_to_copy);
+void VasInsert(char *input, int const position, const char *what_to_copy);
+void VasReplace(char *input, const char *what_to_find, const char *to_replace);
 void VasCleanUpSpaces(char *input_str);
-bool VasCharMatch(char input_char, char *input_char_arr_to_find);
-int VasCountOfChars(char *input_str, char *to_find);
-int VasFindAndReplaceChar(char *input_str, char *to_find, char to_replace);
+bool VasCharMatch(const char input_char, const char *input_char_arr_to_find);
+int VasCountOfChars(const char *input_str, const char *to_find);
 void VasReverseCharArray(char *string);
 void VasCleanUpTrailingZeroes(char *input_str);
 // ----------------
 
-void VasCpy(char *input, int position, char *what_to_copy) {
+void VasCpy(char *input, const int position, const char *what_to_copy) {
   for (int i = 0; i < strlen(what_to_copy); ++i) {
     input[position + i] = what_to_copy[i];
   }
 }
 
 // TODO: this function
-void VasInsert(char *input, int position, char *what_to_copy) {
+void VasInsert(char *input, int const position, const char *what_to_copy) {
   char left[vas_kMaxStringSize] = {0};
   char right[vas_kMaxStringSize] = {0};
   for (int i = 0; i < strlen(what_to_copy); ++i) {
@@ -32,7 +31,7 @@ void VasInsert(char *input, int position, char *what_to_copy) {
   }
 }
 
-void VasReplace(char *input, char *what_to_find, char *to_replace) {
+void VasReplace(char *input, const char *what_to_find, const char *to_replace) {
   int what_to_find_len = strlen(what_to_find);
   char temp_str[vas_kMaxStringSize] = {0};
   for (int i = 0; i < strlen(input); ++i) {
@@ -56,7 +55,7 @@ void VasCleanUpSpaces(char *input_str) {
   strcpy(input_str, temp_str);
 }
 
-bool VasCharMatch(char char_to_match, char *char_array_to_match) {
+bool VasCharMatch(const char char_to_match, const char *char_array_to_match) {
   bool match = 0;
   int i = 0;
   while (char_array_to_match[i] != '\0') {
@@ -68,19 +67,10 @@ bool VasCharMatch(char char_to_match, char *char_array_to_match) {
   return match;
 }
 
-int VasCountOfChars(char *input_str, char *to_find) {
+int VasCountOfChars(const char *input_str, const char *to_find) {
   int counter = 0, i = 0;
   while (input_str[i] != '\0') {
     if (VasCharMatch(input_str[i], to_find)) counter++;
-    i++;
-  }
-  return counter;
-}
-
-int VasFindAndReplaceChar(char *input_str, char *to_find, char to_replace) {
-  int counter = 0, i = 0;
-  while (input_str[i] != '\0') {
-    if (VasCharMatch(input_str[i], to_find)) input_str[i] = to_replace;
     i++;
   }
   return counter;
