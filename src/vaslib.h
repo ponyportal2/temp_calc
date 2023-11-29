@@ -7,7 +7,7 @@
 #define vas_kMaxStringSize 16384
 
 void VasCpy(char *input, const int position, const char *what_to_copy);
-void VasInsert(char *input, int const position, const char *what_to_copy);
+int VasInsert(char *input, int const position, const char *what_to_copy);
 void VasReplace(char *input, const char *what_to_find, const char *to_replace);
 void VasCleanUpSpaces(char *input_str);
 bool VasCharMatch(const char input_char, const char *input_char_arr_to_find);
@@ -23,12 +23,21 @@ void VasCpy(char *input, const int position, const char *what_to_copy) {
 }
 
 // TODO: this function
-void VasInsert(char *input, int const position, const char *what_to_copy) {
-  char left[vas_kMaxStringSize] = {0};
-  char right[vas_kMaxStringSize] = {0};
-  for (int i = 0; i < strlen(what_to_copy); ++i) {
-    input[position + i] = what_to_copy[i];
+int VasInsert(char *input, int const position, const char *what_to_copy) {
+  int valid = 0;
+  char temp_input[vas_kMaxStringSize] = {0};
+  if (position <= strlen(input) && position > -1) {
+    valid = 1;
+    char left[vas_kMaxStringSize] = {0};
+    char right[vas_kMaxStringSize] = {0};
+    strncpy(left, input, position);
+    strcpy(right, input + position);
+    strcpy(temp_input, left);
+    strcat(temp_input, what_to_copy);
+    strcat(temp_input, right);
+    strcpy(input, temp_input);
   }
+  return valid;
 }
 
 void VasReplace(char *input, const char *what_to_find, const char *to_replace) {

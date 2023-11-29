@@ -206,7 +206,7 @@ void Calculate(view_to_calc_struct view_to_calc,
     if (expression_error == calcerr_kNoError) {
       printf(">>%s<<\n", expression);
       TransformUnariesModAndSpaces(expression);
-      addMultSignsToBrackets(expression);
+      AddMultSigns(expression);
       addOuterBrackets(expression);
       int start = UNINIT, end = UNINIT, bracketsError = 0;
       bool allCalculationsFinished = false, loop_break = false;
@@ -464,7 +464,8 @@ void TransformUnariesModAndSpaces(char *input) {
     VasReplace(input, "+-", "+~");
     VasReplace(input, "~-", " +");  // ??
     VasReplace(input, "--", " +");  // ??
-                                    // simple replacements:
+
+    // simple replacements:
     VasReplace(input, "(+", "( ");
     VasReplace(input, "(-", "(~");
     VasReplace(input, "/+", "/ ");
@@ -479,17 +480,20 @@ void TransformUnariesModAndSpaces(char *input) {
   } while (strcmp(before, input) != 0);
 }
 
-// otdelno
-// {"(-(", "(_("}
-// otdelno
-// {")-", ")*-"}, {")(", ")*("}, {")0", ")*0"},
-//       {")1", ")*1"}, {")2", ")*2"}, {")3", ")*3"}, {")4", ")*4"}, {")5",
-//       ")*5"},
-//       {")6", ")*6"}, {")7", ")*7"}, {")8", ")*8"}, {")9", ")*9"}, {"0(",
-//       "0*("},
-//       {"1(", "1*("}, {"2(", "2*("}, {"3(", "3*("}, {"4(", "4*("}, {"5(",
-//       "5*("},
-//       {"6(", "6*("}, {"7(", "7*("}, {"8(", "8*("}, {"9(", "9*("}
+void AddMultSigns(char *input) {
+  int err = 0;
+  for (int i = 0; input[i] != '\0'; ++i) {
+    if ((input[i] >= 48 && input[i] <= 57) && input[i + 1] == '(') {
+      VasInsert(input, i + 1, "*");
+    } else if (input[i] == ')' && (input[i + 1] >= 48 && input[i + 1] <= 57)) {
+      VasInsert(input, i + 1, "*");
+    } else if (input[i] == ')' && input[i + 1] == '~') {
+      VasInsert(input, i + 1, "*");
+    } else if (input[i] == ')' && input[i + 1] == '(') {
+      VasInsert(input, i + 1, "*");
+    }
+  }
+}
 
 // void TransformUnariesAndMod(char *input) {
 //   char before[calc_kMaxStringSize] = {0};
@@ -752,36 +756,6 @@ bool isJustANumber(char *inputStr) {
     printf("\nEMPTY STRING IN IS JUST A NUMBER\n");
   }
   return bIsJustANumber;
-}
-
-void addMultSignsToBrackets(char *inputStr) {
-  int i = 0;
-  char tempStr[calc_kMaxStringSize] = {0};
-  char left[calc_kMaxStringSize] = {0};
-  char right[calc_kMaxStringSize] = {0};
-  char *toMatch = "0123456789.";
-  while (inputStr[i] != '\0') {
-    bool leftBracketCondition =
-        inputStr[i] == ')' && VasCharMatch(inputStr[i + 1], toMatch);
-    bool rightBracketCondition =
-        inputStr[i + 1] == '(' && VasCharMatch(inputStr[i], toMatch);
-    if (leftBracketCondition == true || rightBracketCondition == true) {
-      SplitInHalf(inputStr, left, right, i);
-      strcpy(tempStr, left);
-      strcat(tempStr, "*");
-      strcat(tempStr, right);
-      strcpy(inputStr, tempStr);
-      i = 0;
-    } else if (inputStr[i] == ')' && inputStr[i + 1] == '(') {
-      SplitInHalf(inputStr, left, right, i);
-      strcpy(tempStr, left);
-      strcat(tempStr, "*");
-      strcat(tempStr, right);
-      strcpy(inputStr, tempStr);
-    } else {
-      i++;
-    }
-  }
 }
 
 // FOR DEBUGGING:

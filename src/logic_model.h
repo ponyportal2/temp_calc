@@ -67,6 +67,7 @@ int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
 void CalcErrorMessage(int error_enum, char *error_message);
 bool AreBracketsValid(const char *inputStr);
 void TransformUnariesModAndSpaces(char *inputStr);
+void AddMultSigns(char *input);
 long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
 long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
 int parseAndApplyOperators(char *midStr);
