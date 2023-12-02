@@ -79,7 +79,7 @@ void CleanUpSpaces(char *inputStr);
 int operatorCount(char *inputStr);
 void recombine(char *inputStr, char *left, char *middle, char *right);
 bool isJustANumber(char *inputStr);
-void addOuterBrackets(char *inputStr);
+void AddOuterBrackets(char *inputStr);
 bool doesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);

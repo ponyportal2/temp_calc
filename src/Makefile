@@ -22,7 +22,7 @@ SOURCESGCOV=  controller.c logic_model.c test_check.c
 HEADERSGCOV=  controller.h logic_model.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
-com= 
+com=
 # -----------------
 
 all: styleforce build

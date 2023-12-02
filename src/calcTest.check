@@ -66,6 +66,16 @@ TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Invalid symbols encountered", outputStr);
 
+// TEST7
+
+#test calc7
+
+char expression[MAX_STRING_SIZE] = "-(-(-3^(-(-(3^4^-5678.1234^-6^-3^-4^5^7)^(2/5)^4^(2^2^(1)^(2)*(1)))^5)^6))"; 
+char outputStr[MAX_STRING_SIZE] = {0};
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("-3", outputStr);
+
 // ------
 // WITH X
 // ------
@@ -142,7 +152,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_str_eq("-3999999999998999742382080.0", outputStr);
+ck_assert_str_eq("-3999999999999000000069632.0", outputStr);
 
 // TESTX11_2
 

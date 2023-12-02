@@ -204,34 +204,33 @@ void Calculate(view_to_calc_struct view_to_calc,
     strcpy(expression, view_to_calc.calc_input);
     int expression_error = Validation(expression);
     if (expression_error == calcerr_kNoError) {
-      printf(">>%s<<\n", expression);
       TransformUnariesModAndSpaces(expression);
       AddMultSigns(expression);
-      addOuterBrackets(expression);
-      int start = UNINIT, end = UNINIT, bracketsError = 0;
-      bool allCalculationsFinished = false, loop_break = false;
-      while (allCalculationsFinished == false && bracketsError == 0 &&
-             loop_break == false && expression_error == 0) {
-        char prev_l_expression[calc_kMaxStringSize] = {0};
-        strcpy(prev_l_expression, expression);
-        // printf("\n{%s}\n", expression);
+      AddOuterBrackets(expression);
+      int start = UNINIT, end = UNINIT, brackets_error = 0;
+      bool loop_break = false;
+      while (brackets_error == 0 && loop_break == false &&
+             expression_error == 0) {
+        printf("%s\n", expression);
+        char prev_expression[calc_kMaxStringSize] = {0};
+        strcpy(prev_expression, expression);
         char left[calc_kMaxStringSize] = {0}, middle[calc_kMaxStringSize] = {0},
              right[calc_kMaxStringSize] = {0};
-        bracketsError = findDeepestBrackets(expression, &start, &end);
-        if (bracketsError == 0) {
+        brackets_error = findDeepestBrackets(expression, &start, &end);
+        if (brackets_error == 0) {
           ThreeWaySplit(expression, left, middle, right, start, end);
           // printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
           expression_error = parseAndApplyOperators(middle);
           if (expression_error != 0) loop_break = true;
           if (expression_error == 0) {
             recombine(expression, left, middle, right);
-            bracketsError = findDeepestBrackets(expression, &start, &end);
+            brackets_error = findDeepestBrackets(expression, &start, &end);
             // if (bracketsError != 0) printf("\n>BRACKETS ERROR<");
             expression_error = unfoldBrackets(expression, start, end);
             if (!doesHaveBrackets(expression) && !isJustANumber(expression)) {
-              addOuterBrackets(expression);
+              AddOuterBrackets(expression);
             } else if (!doesHaveBrackets(expression)) {
-              allCalculationsFinished = true;
+              loop_break = true;
             }
           }
         }
@@ -239,7 +238,7 @@ void Calculate(view_to_calc_struct view_to_calc,
         if (!AreBracketsValid(expression)) {
           expression_error = calcerr_kBracketsAreInvaild;
         }
-        if (strcmp(prev_l_expression, expression) == 0) loop_break = true;
+        if (strcmp(prev_expression, expression) == 0) loop_break = true;
       }
     }
 
@@ -247,28 +246,28 @@ void Calculate(view_to_calc_struct view_to_calc,
     // =============
     if (expression_error == calcerr_kNoError) {
       if (expression[0] == '~') expression[0] = '-';
-      if (strtod(expression, NULL) > INFI) {
+      if (strtold(expression, NULL) > INFI) {
         strcpy(calc_to_view.answer, "inf");
-      } else if (strtod(expression, NULL) < (INFI * -1)) {
+      } else if (strtold(expression, NULL) < (INFI * -1)) {
         strcpy(calc_to_view.answer, "-inf");
       } else {
-        sprintfHelper(calc_to_view.answer, strtod(expression, NULL));
+        sprintfHelper(calc_to_view.answer, strtold(expression, NULL));
         VasCleanUpSpaces(calc_to_view.answer);
         VasCleanUpTrailingZeroes(calc_to_view.answer);
       }
-      printf("\nTHE ANSWER:%s\n", calc_to_view.answer);
     } else {
       CalcErrorMessage(expression_error, calc_to_view.answer);
     }
+    printf("\nFINAL ANSWER:%s\n\n", calc_to_view.answer);
   }
 }
 
-void addOuterBrackets(char *inputStr) {
-  char tempStr[calc_kMaxStringSize] = {0};
-  strcat(tempStr, "(");
-  strcat(tempStr, inputStr);
-  strcat(tempStr, ")");
-  strcpy(inputStr, tempStr);
+void AddOuterBrackets(char *input_str) {
+  char temp_str[calc_kMaxStringSize] = {0};
+  strcat(temp_str, "(");
+  strcat(temp_str, input_str);
+  strcat(temp_str, ")");
+  strcpy(input_str, temp_str);
 }
 
 bool doesHaveBrackets(char *inputStr) {
@@ -306,31 +305,28 @@ void ReplaceX(char *input_str, const char *input_x) {
   }
 }
 
-int findDeepestBrackets(char *inputStr, int *startIn, int *endIn) {
-  int hasError = 0;
-  int i = 0;
-  int start = UNINIT;
-  int end = UNINIT;
-  bool whileBreak = false;
-  while (whileBreak == false) {
-    if (inputStr[i] == '(') {
+int findDeepestBrackets(char *input_str, int *start_in, int *end_in) {
+  int hasError = 0, i = 0, start = UNINIT, end = UNINIT;
+  bool loop_break = false;
+  while (loop_break == false) {
+    if (input_str[i] == '(') {
       start = i;
-    } else if (inputStr[i] == '\0') {
+    } else if (input_str[i] == '\0') {
       if (start == UNINIT && end == UNINIT) {
         hasError = -1;  // hasError -1 means no brackets found
       } else if (start == UNINIT || end == UNINIT) {
         hasError = 1;  // hasError 1 means no starting or ending brackets
       }
-      whileBreak = true;
-    } else if (inputStr[i] == ')') {
+      loop_break = true;
+    } else if (input_str[i] == ')') {
       end = i;
-      whileBreak = true;
+      loop_break = true;
     }
     i++;
   }
   if (hasError == 0) {
-    *startIn = start;
-    *endIn = end;
+    *start_in = start;
+    *end_in = end;
   }
   return hasError;
 }
@@ -601,7 +597,7 @@ long double getLRDigits(char *input, int oper_position, int *digits_end,
   *digits_end = i;
   if (is_left) VasReverseCharArray(final_number);
   // printf("final number:%s\n", final_number);
-  return strtod(final_number, NULL);
+  return strtold(final_number, NULL);
 }
 
 int parseAndApplyOperators(char *midStr) {
@@ -645,23 +641,23 @@ int operatorPassLoop(char *inputMid, char *opChar) {
 }
 
 int operatorPass(char *inputMid, char opChar) {
-  int i = 0;
-  int err = 0;
-  int resultStart = UNINIT;
-  int resultEnd = UNINIT;
+  int i = 0, err = 0, resultStart = UNINIT, resultEnd = UNINIT;
   long double calcResult = 0.0L;
   char sprintfResult[calc_kMaxStringSize] = {0};
+  char temp1[calc_kMaxStringSize] = {0};
+  char temp2[calc_kMaxStringSize] = {0};
   bool whileBreak = false;
   while (inputMid[i] != '\0' && whileBreak == false) {
     if (inputMid[i] == opChar) {
       switch (opChar) {
         case '*':
+          printf("\n1\n");
           calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) *
                        (long double)getRightDigits(inputMid, i, &resultEnd);
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '/':
-
+          printf("\n2\n");
           if (getRightDigits(inputMid, i, &resultEnd) != 0) {
             calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) /
                          (long double)getRightDigits(inputMid, i, &resultEnd);
@@ -672,29 +668,40 @@ int operatorPass(char *inputMid, char opChar) {
           }
           break;
         case '+':
+          printf("\n3\n");
           calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) +
                        (long double)getRightDigits(inputMid, i, &resultEnd);
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '-':
+          // printf("\n4\n");
           calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) -
                        (long double)getRightDigits(inputMid, i, &resultEnd);
+          sprintfHelper(temp1, getLeftDigits(inputMid, i, &resultStart));
+          sprintfHelper(temp2, getRightDigits(inputMid, i, &resultEnd));
+          sprintfHelper(sprintfResult, calcResult);
+          // printf("\nl:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '^':
+          printf("\n5\n");
           calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
                             getRightDigits(inputMid, i, &resultEnd));
+          sprintfHelper(temp1, getLeftDigits(inputMid, i, &resultStart));
+          sprintfHelper(temp2, getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
+          printf("\nl:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
           break;
         case '%':
+          printf("\n6\n");
           calcResult = fmodl(getLeftDigits(inputMid, i, &resultStart),
                              getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
           break;
       }
       // using just this instead of transformUnariesAndMod:
-      if (sprintfResult[0] == '-') sprintfResult[0] = '~';
-      // changeAllUnaries(resultGcvt); // probably shouldn't be here
+      // if (sprintfResult[0] == '-') sprintfResult[0] = '~';
+      TransformUnariesModAndSpaces(inputMid);  // probably shouldn't be here
       if (operatorCount(inputMid) > 0) {
         char left[calc_kMaxStringSize] = {0};
         char middle[calc_kMaxStringSize] = {0};
