@@ -651,13 +651,13 @@ int operatorPass(char *inputMid, char opChar) {
     if (inputMid[i] == opChar) {
       switch (opChar) {
         case '*':
-          printf("\n1\n");
+          // printf("\n1\n");
           calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) *
                        (long double)getRightDigits(inputMid, i, &resultEnd);
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '/':
-          printf("\n2\n");
+          // printf("\n2\n");
           if (getRightDigits(inputMid, i, &resultEnd) != 0) {
             calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) /
                          (long double)getRightDigits(inputMid, i, &resultEnd);
@@ -668,7 +668,7 @@ int operatorPass(char *inputMid, char opChar) {
           }
           break;
         case '+':
-          printf("\n3\n");
+          // printf("\n3\n");
           calcResult = (long double)getLeftDigits(inputMid, i, &resultStart) +
                        (long double)getRightDigits(inputMid, i, &resultEnd);
           sprintfHelper(sprintfResult, calcResult);
@@ -679,28 +679,27 @@ int operatorPass(char *inputMid, char opChar) {
                        (long double)getRightDigits(inputMid, i, &resultEnd);
           sprintfHelper(temp1, getLeftDigits(inputMid, i, &resultStart));
           sprintfHelper(temp2, getRightDigits(inputMid, i, &resultEnd));
-          sprintfHelper(sprintfResult, calcResult);
-          // printf("\nl:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
+          // printf("l:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
           sprintfHelper(sprintfResult, calcResult);
           break;
         case '^':
-          printf("\n5\n");
+          // printf("\n5\n");
           calcResult = powl(getLeftDigits(inputMid, i, &resultStart),
                             getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(temp1, getLeftDigits(inputMid, i, &resultStart));
           sprintfHelper(temp2, getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
-          printf("\nl:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
+          printf("l:%s,r:%s,res:%s\n", temp1, temp2, sprintfResult);
           break;
         case '%':
-          printf("\n6\n");
+          // printf("\n6\n");
           calcResult = fmodl(getLeftDigits(inputMid, i, &resultStart),
                              getRightDigits(inputMid, i, &resultEnd));
           sprintfHelper(sprintfResult, calcResult);
           break;
       }
       // using just this instead of transformUnariesAndMod:
-      // if (sprintfResult[0] == '-') sprintfResult[0] = '~';
+      if (sprintfResult[0] == '-') sprintfResult[0] = '~';
       TransformUnariesModAndSpaces(inputMid);  // probably shouldn't be here
       if (operatorCount(inputMid) > 0) {
         char left[calc_kMaxStringSize] = {0};
