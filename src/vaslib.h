@@ -36,6 +36,7 @@ int VasInsert(char *input, int const position, const char *what_to_copy) {
     strcat(temp_input, what_to_copy);
     strcat(temp_input, right);
     strcpy(input, temp_input);
+    printf("<%s>\n<%s>\n", left, right);
   }
   return valid;
 }

@@ -221,8 +221,9 @@ void Calculate(view_to_calc_struct view_to_calc,
           ThreeWaySplit(expression, left, middle, right, start, end);
           // printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
           expression_error = parseAndApplyOperators(middle);
-          if (expression_error != 0) loop_break = true;
-          if (expression_error == 0) {
+          if (expression_error != 0 || brackets_error != 0) {
+            loop_break = true;
+          } else {
             recombine(expression, left, middle, right);
             brackets_error = findDeepestBrackets(expression, &start, &end);
             // if (bracketsError != 0) printf("\n>BRACKETS ERROR<");
@@ -288,16 +289,15 @@ void ReplaceX(char *input_str, const char *input_x) {
   char input_x_local[calc_kMaxStringSize] = {0};
   strcpy(input_x_local, input_x);
   if (input_x_local[0] == '-') input_x_local[0] = '~';
-  int i = 0;
-  while (input_str[i] != '\0') {
+  for (int i = 0; input_str[i] != '\0';) {
     if (input_str[i] == 'x' || input_str[i] == 'X') {
-      char tempStr[calc_kMaxStringSize] = {0}, left[calc_kMaxStringSize] = {0},
+      char temp_str[calc_kMaxStringSize] = {0}, left[calc_kMaxStringSize] = {0},
            right[calc_kMaxStringSize] = {0};
       SplitInHalf(input_str, left, right, i);
-      strncpy(tempStr, left, strlen(left) - 1);
-      strcat(tempStr, input_x_local);
-      strcat(tempStr, right);
-      strcpy(input_str, tempStr);
+      strncpy(temp_str, left, strlen(left) - 1);
+      strcat(temp_str, input_x_local);
+      strcat(temp_str, right);
+      strcpy(input_str, temp_str);
       i = 0;
     } else {
       i++;
@@ -306,29 +306,25 @@ void ReplaceX(char *input_str, const char *input_x) {
 }
 
 int findDeepestBrackets(char *input_str, int *start_in, int *end_in) {
-  int hasError = 0, i = 0, start = UNINIT, end = UNINIT;
+  int has_error = 0, i = 0, start = UNINIT, end = UNINIT;
   bool loop_break = false;
   while (loop_break == false) {
     if (input_str[i] == '(') {
       start = i;
-    } else if (input_str[i] == '\0') {
-      if (start == UNINIT && end == UNINIT) {
-        hasError = -1;  // hasError -1 means no brackets found
-      } else if (start == UNINIT || end == UNINIT) {
-        hasError = 1;  // hasError 1 means no starting or ending brackets
-      }
-      loop_break = true;
     } else if (input_str[i] == ')') {
       end = i;
+      loop_break = true;
+    } else if (input_str[i] == '\0') {
+      if (start == UNINIT || end == UNINIT) has_error = 1;
       loop_break = true;
     }
     i++;
   }
-  if (hasError == 0) {
+  if (has_error == 0) {
     *start_in = start;
     *end_in = end;
   }
-  return hasError;
+  return has_error;
 }
 
 int unfoldBrackets(char *inputStr, int startIn, int endIn) {
@@ -490,58 +486,6 @@ void AddMultSigns(char *input) {
     }
   }
 }
-
-// void TransformUnariesAndMod(char *input) {
-//   char before[calc_kMaxStringSize] = {0};
-//   do {
-//     strcpy(before, input);
-//     if (input[0] == '+' && strlen(input) > 0) input[0] = ' ';
-//     if (strlen(input) >= 2 && input[0] == '-') {
-//       if (input[1] == '-') {
-//         input[0] = ' ';
-//         input[1] = ' ';
-//       } else if (input[1] == '(') {
-//         input[0] = '_';
-//       } else {
-//         input[0] = '~';
-//       }
-//     }
-//     const char *map_pair[][2] = {
-//         {"++", "+ "}, {"-+", "- "}, {"-+", "- "},       {"(-", "(~"},
-//         {"(+", "( "}, {"/+", "/ "}, {"/+", "/ "},       {"*+", "* "},
-//         {"/-", "/~"}, {"*-", "*~"}, {"^+", "^ "},       {"^-", "^~"},
-//         {"%+", "% "}, {"%-", "%~"}, {"+-", "+~"},       {"+-", "+~"},
-//         {"-~", " +"}, {"~-", "~~"}, /*?*/ {"--", " +"},
-//     };
-//     const char *map_tri[][3] = {
-//         {"(-(", "(_("},
-//         {"mod", "  %"},
-//     };
-//     char temp_str[4] = {0};
-//     for (int i = 0; i <= strlen(input) && strlen(input) >= 2; ++i) {
-//       temp_str[0] = input[i];
-//       temp_str[1] = input[i + 1];
-//       for (int j = 0; j < sizeof(map_pair) / sizeof(map_pair[0]); ++j) {
-//         if (strcmp(temp_str, map_pair[i][0]) == 0) {
-//           input[i] = map_pair[j][1][0];
-//           input[i + 1] = map_pair[j][1][1];
-//         }
-//       }
-//       temp_str[2] = input[i + 2];
-//       for (int j = 0; j < sizeof(map_tri) / sizeof(map_tri[0]); ++j) {
-//         if (strcmp(temp_str, map_tri[i][0]) == 0) {
-//           input[i] = map_tri[j][1][0];
-//           input[i + 1] = map_tri[j][1][1];
-//           input[i + 2] = map_tri[j][1][2];
-//         }
-//       }
-//       strcpy(temp_str, "");
-//     }
-//     VasCleanUpSpaces(input);
-//   } while (strcmp(input, before) != 0);
-// }
-
-// TODO another function, but for * between and after/before brackets
 
 int operatorCount(char *inputStr) {
   char *toMatch = "+-*/^%";
@@ -801,3 +745,55 @@ bool isJustANumber(char *inputStr) {
 //   calc_kBracketsInvalid,
 //   calc_kNoBrackets,
 // };
+
+// void TransformUnariesAndMod(char *input) {
+//   char before[calc_kMaxStringSize] = {0};
+//   do {
+//     strcpy(before, input);
+//     if (input[0] == '+' && strlen(input) > 0) input[0] = ' ';
+//     if (strlen(input) >= 2 && input[0] == '-') {
+//       if (input[1] == '-') {
+//         input[0] = ' ';
+//         input[1] = ' ';
+//       } else if (input[1] == '(') {
+//         input[0] = '_';
+//       } else {
+//         input[0] = '~';
+//       }
+//     }
+//     const char *map_pair[][2] = {
+//         {"++", "+ "}, {"-+", "- "}, {"-+", "- "},       {"(-", "(~"},
+//         {"(+", "( "}, {"/+", "/ "}, {"/+", "/ "},       {"*+", "* "},
+//         {"/-", "/~"}, {"*-", "*~"}, {"^+", "^ "},       {"^-", "^~"},
+//         {"%+", "% "}, {"%-", "%~"}, {"+-", "+~"},       {"+-", "+~"},
+//         {"-~", " +"}, {"~-", "~~"}, /*?*/ {"--", " +"},
+//     };
+//     const char *map_tri[][3] = {
+//         {"(-(", "(_("},
+//         {"mod", "  %"},
+//     };
+//     char temp_str[4] = {0};
+//     for (int i = 0; i <= strlen(input) && strlen(input) >= 2; ++i) {
+//       temp_str[0] = input[i];
+//       temp_str[1] = input[i + 1];
+//       for (int j = 0; j < sizeof(map_pair) / sizeof(map_pair[0]); ++j) {
+//         if (strcmp(temp_str, map_pair[i][0]) == 0) {
+//           input[i] = map_pair[j][1][0];
+//           input[i + 1] = map_pair[j][1][1];
+//         }
+//       }
+//       temp_str[2] = input[i + 2];
+//       for (int j = 0; j < sizeof(map_tri) / sizeof(map_tri[0]); ++j) {
+//         if (strcmp(temp_str, map_tri[i][0]) == 0) {
+//           input[i] = map_tri[j][1][0];
+//           input[i + 1] = map_tri[j][1][1];
+//           input[i + 2] = map_tri[j][1][2];
+//         }
+//       }
+//       strcpy(temp_str, "");
+//     }
+//     VasCleanUpSpaces(input);
+//   } while (strcmp(input, before) != 0);
+// }
+
+// TODO another function, but for * between and after/before brackets
