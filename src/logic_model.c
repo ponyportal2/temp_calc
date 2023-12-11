@@ -1,26 +1,25 @@
 #include "logic_model.h"
 
 #include "vaslib.h"
-// TODO: DOUBLE DOT
 
+// TODO: DOUBLE DOT
 const int calc_kUninit = -68;
 #define CALC_STR_(X) #X
 #define CALC_STR(X) CALC_STR_(X)
 #define CALC_SPRINTF_PRECISION 10
 
-void CalcErrorMessage(enum calc_CalculationError error_enum,
-                      char *error_message) {
+void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
   const char *BracketsAreInvaild_message = "Brackets are invalid";
   const char *InvalidSymbols_message = "Invalid symbols encountered";
-  if (error_enum == calcerr_kDivisionByZero) {
+  if (error_enum == calc_Err_kDivisionByZero) {
     strcpy(error_message, DivisionByZero_message);
-  } else if (error_enum == calcerr_kNan) {
+  } else if (error_enum == calc_Err_kNan) {
     strcpy(error_message, Nan_message);
-  } else if (error_enum == calcerr_kBracketsAreInvaild) {
+  } else if (error_enum == calc_Err_kBracketsAreInvaild) {
     strcpy(error_message, BracketsAreInvaild_message);
-  } else if (error_enum == calcerr_kInvalidSymbols) {
+  } else if (error_enum == calc_Err_kInvalidSymbols) {
     strcpy(error_message, InvalidSymbols_message);
   }
 }
@@ -189,15 +188,15 @@ bool MultidotError(const char *input_str) {
   return double_dot_found;
 }
 
-int Validation(const char *expression) {
-  int expression_error = calcerr_kNoError;
+enum calc_Err Validation(const char *expression) {
+  enum calc_Err expression_error = calc_Err_kOk;
   if (!AreBracketsValid(expression)) {
-    expression_error = calcerr_kBracketsAreInvaild;
+    expression_error = calc_Err_kBracketsAreInvaild;
   }
   if (ContainsInvalidCharacters(expression) ||
       ContainsUnallowedRepeatingChars(expression) ||
       ContainsUnallowedTriples(expression) || MultidotError(expression)) {
-    expression_error = calcerr_kInvalidSymbols;
+    expression_error = calc_Err_kInvalidSymbols;
   }
   return expression_error;
 }
@@ -214,7 +213,7 @@ void Calculate(view_to_calc_struct view_to_calc,
     }
     char expression[calc_kMaxStrSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
-    enum calc_CalculationError expression_error = Validation(expression);
+    enum calc_Err expression_error = Validation(expression);
     if (!expression_error) {
       TransformUnariesModAndSpaces(expression);
       AddMultSigns(expression);
@@ -248,12 +247,12 @@ void Calculate(view_to_calc_struct view_to_calc,
 }
 
 void CalculatorOutput(char *expression, char *output_answer,
-                      enum calc_CalculationError calc_error) {
+                      enum calc_Err calc_error) {
   if (expression[0] == '~') expression[0] = '-';
-  if (calc_error != calcerr_kNoError) {
+  if (calc_error != calc_Err_kOk) {
     CalcErrorMessage(calc_error, output_answer);
   } else if (!IsJustANumber(expression)) {
-    calc_error = calcerr_kInvalidSymbols;
+    calc_error = calc_Err_kInvalidSymbols;
     CalcErrorMessage(calc_error, output_answer);
   } else {
     long double final_result = strtold(expression, NULL);
@@ -324,13 +323,13 @@ int FindDeepestBrackets(char *input_str, int *start_in, int *end_in) {
   return has_error;
 }
 
-int unfoldBrackets(char *inputStr, int startIn, int endIn) {
+enum calc_Err unfoldBrackets(char *inputStr, int startIn, int endIn) {
   int oper = checkLeftBracketOper(inputStr, startIn);
   char left[calc_kMaxStrSize] = {0};
   char middle[calc_kMaxStrSize] = {0};
   char right[calc_kMaxStrSize] = {0};
   char tempStr[calc_kMaxStrSize] = {0};
-  int err = 0;  // error for the return
+  enum calc_Err err = calc_Err_kOk;  // error for the return
   ThreeWaySplit(inputStr, left, middle, right, startIn, endIn);
   if (oper == BR_OPER_MINUS) {
     if (middle[0] == '~') {
@@ -353,7 +352,7 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
     if (middle[0] != '-' && middle[0] != '~') {
       unfoldHelper(sqrtl, left, middle, right, inputStr, 4, &err);
     } else {  // negative sqrt is a complex number
-      err = calcerr_kNan;
+      err = calc_Err_kNan;
     }
   } else if (oper == BR_OPER_COS) {
     unfoldHelper(cosl, left, middle, right, inputStr, 3, &err);
@@ -373,10 +372,11 @@ int unfoldBrackets(char *inputStr, int startIn, int endIn) {
 }
 
 void unfoldHelper(long double (*f)(long double), char *left, char *middle,
-                  char *right, char *inputStr, int howManyLetters, int *err) {
+                  char *right, char *inputStr, int howManyLetters,
+                  enum calc_Err *err) {
   SprintfHelper(middle, f(strtold(middle, NULL)));
   if (strstr("nan", middle) || strstr("NaN", middle) || strstr("NAN", middle)) {
-    *err = calcerr_kNan;
+    *err = calc_Err_kNan;
   }
   DeleteBrackets(left, right);
   left[strlen(left) - howManyLetters] = '\0';
@@ -520,8 +520,8 @@ long double GetLeftOrRightDigits(char *input, int oper_position,
 
 int OperCount(char *input) { return VasCountOfChars(input, "^/*%-+"); }
 
-int ParseAndApplyOperators(char *mid_inp) {
-  enum calc_CalculationError err = 0;
+enum calc_Err ParseAndApplyOperators(char *mid_inp) {
+  enum calc_Err err = calc_Err_kOk;
   bool loop_break = false;
   while (1) {
     if (err = OperatorPassLoop(mid_inp, "^")) break;
@@ -536,8 +536,8 @@ int ParseAndApplyOperators(char *mid_inp) {
   return err;
 }
 
-int OperatorPassLoop(char *input_mid, char *op_char) {
-  enum calc_CalculationError err = 0;
+enum calc_Err OperatorPassLoop(char *input_mid, char *op_char) {
+  enum calc_Err err = calc_Err_kOk;
   bool loop_break = false;
   while (VasCountOfChars(input_mid, op_char) > 0 && loop_break == false) {
     if (err = OperatorPass(input_mid, op_char)) loop_break = true;
@@ -545,8 +545,8 @@ int OperatorPassLoop(char *input_mid, char *op_char) {
   return err;
 }
 
-int OperatorPass(char *input, char *op_char) {
-  enum calc_CalculationError err = 0;
+enum calc_Err OperatorPass(char *input, char *op_char) {
+  enum calc_Err err = calc_Err_kOk;
   int i = 0, res_start = calc_kUninit, res_end = calc_kUninit;
   long double result = 0.0L;
   char char_array_result[calc_kMaxStrSize] = {0};
@@ -566,7 +566,7 @@ int OperatorPass(char *input, char *op_char) {
         case '/':
           if (RNum(input, i, &res_end) == 0) {
             zero_div == true;
-            err = calcerr_kDivisionByZero;
+            err = calc_Err_kDivisionByZero;
           } else {
             result = LNum(input, i, &res_start) / RNum(input, i, &res_end);
           }
@@ -592,7 +592,7 @@ int OperatorPass(char *input, char *op_char) {
     }
     ++i;
   }
-  if (result != result && err == 0) err = calcerr_kNan;
+  if (result != result && err == 0) err = calc_Err_kNan;
   return err;
 }
 

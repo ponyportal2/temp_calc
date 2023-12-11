@@ -6,6 +6,7 @@
 #define RAYGUI_IMPLEMENTATION
 // #include "extras/gui_textbox_extended.h"
 #include "raygui.h"
+#include "vaslib.h"
 
 void DeleteWordFromInput(char* inputStr);
 void ClearCalcDotArray(calc_dot* input, int elements);

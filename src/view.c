@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "style_dark.h"
+#include "vaslib.h"
 
 #ifdef CALC_MEME
 #define CALC_MEME 1
@@ -271,15 +272,15 @@ void ClearCalcDotArray(calc_dot* input, int n) {
 }
 
 void DeleteWordFromInput(char* input_str) {
-  char* stop_characters = " +-*/^%()";
+  const char* stop_characters = " +-*/^%()";
   if (strlen(input_str) > 0) {
     int i = strlen(input_str) - 1;
     bool loop_break = false;
-    if (char_match(input_str[i], stop_characters)) {
+    if (VasCharMatch(input_str[i], stop_characters)) {
       input_str[i] = '\0';
     } else {
       while (i > -1 && loop_break == false) {
-        if (!char_match(input_str[i], stop_characters)) {
+        if (!VasCharMatch(input_str[i], stop_characters)) {
           input_str[i] = '\0';
         } else {
           loop_break = true;

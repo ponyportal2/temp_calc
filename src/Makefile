@@ -14,12 +14,12 @@ endif
 
 CFLAGS=-Wall -Werror -Wextra
 GFLAGS=-fprofile-arcs -ftest-coverage
-SOURCES=  view.c controller.c logic_model.c
-HEADERS=  view.h controller.h logic_model.h
-CHECKFILE= calcTest.check
-SOURCESGCOVNOTESTCHECK =  controller.c logic_model.c
-SOURCESGCOV=  controller.c logic_model.c test_check.c
-HEADERSGCOV=  controller.h logic_model.h
+SOURCES=controller.c view.c logic_model.c vaslib.c
+HEADERS=controller.h view.h logic_model.h vaslib.h
+CHECKFILE=calcTest.check
+SOURCESGCOVNOTESTCHECK =  controller.c logic_model.c vaslib.c
+SOURCESGCOV=  controller.c logic_model.c vaslib.c test_check.c
+HEADERSGCOV=  controller.h logic_model.h vaslib.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
 com=
