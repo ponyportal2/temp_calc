@@ -85,7 +85,7 @@ void Recombine(char *inputStr, char *left, char *middle, char *right);
 bool IsJustANumber(char *inputStr);
 bool MultidotError(const char *input_str);
 void AddOuterBrackets(char *inputStr);
-bool doesHaveBrackets(char *inputStr);
+bool DoesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
 void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);

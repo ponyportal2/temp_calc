@@ -234,9 +234,9 @@ void Calculate(view_to_calc_struct view_to_calc,
             Recombine(expression, left, middle, right);
             missing_brackets = FindDeepestBrackets(expression, &start, &end);
             expression_error = unfoldBrackets(expression, start, end);
-            if (!doesHaveBrackets(expression) && !IsJustANumber(expression)) {
+            if (!DoesHaveBrackets(expression) && !IsJustANumber(expression)) {
               AddOuterBrackets(expression);
-            } else if (!doesHaveBrackets(expression)) {
+            } else if (!DoesHaveBrackets(expression)) {
               calc_finished = true;
             }
           }
@@ -279,7 +279,7 @@ void AddOuterBrackets(char *input_str) {
   strcpy(input_str, temp_str);
 }
 
-bool doesHaveBrackets(char *input_str) {
+bool DoesHaveBrackets(char *input_str) {
   return (VasCharMatch('(', input_str) || VasCharMatch(')', input_str));
 }
 
@@ -482,12 +482,9 @@ void AddMultSigns(char *input) {
 
 int OperCount(char *input_str) {
   char *to_match = "+-*/^%";
-  int i = 0, oper_counter = 0;
-  while (input_str[i] != '\0') {
-    if (VasCharMatch(input_str[i], to_match) == true) {
-      ++oper_counter;
-    }
-    ++i;
+  int oper_counter = 0;
+  for (int i; input_str[i] != '\0'; ++i) {
+    if (VasCharMatch(input_str[i], to_match) == true) ++oper_counter;
   }
   return oper_counter;
 }
