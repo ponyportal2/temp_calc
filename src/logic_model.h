@@ -42,6 +42,7 @@ enum calc_CalculationError {
   calcerr_kInvalidSymbols
 };
 
+int OperCount(char *input);
 void TestCalculate(char *input, char *output, int dummy);
 void UnlockCalculate();
 
@@ -67,7 +68,8 @@ void SprintfHelper(char *tempStr, long double calcResult);
 void ThreeWaySplit(char *input_str, char *left, char *middle, char *right,
                    int start, int end);
 int FindDeepestBrackets(char *inputStr, int *startIn, int *endIn);
-void CalcErrorMessage(int error_enum, char *error_message);
+void CalcErrorMessage(enum calc_CalculationError error_enum,
+                      char *error_message);
 void SplitInHalf(char *input_str, char *left, char *right, int split_pos);
 bool AreBracketsValid(const char *inputStr);
 void TransformUnariesModAndSpaces(char *inputStr);

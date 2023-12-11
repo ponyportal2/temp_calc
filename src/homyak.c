@@ -1,3 +1,20 @@
+// int OperCount(char *input) { return VasCountOfChars(input, "^/*%-+"); }
+
+// bool IsJustANumber(char *input_str) {
+//   char to_match[calc_kMaxStrSize] = "0123456789. inf NAN nan";
+//   int i = 0;
+//   bool is_num = true;
+//   if (strlen(input_str) == 0) is_num = false;
+//   while (is_num && input_str[i] != '\0') {
+//     if (input_str[0] == '-' || input_str[0] == '~') i = 1;
+//     if (VasCharMatch(input_str[i], to_match) == false) is_num = false;
+//     ++i;
+//   }
+//   return is_num;
+// }
+
+// ----------
+
 // if (input[i] == op_char) {
 //   if (op_char == '*') {
 //     calc_result = (long double)LeftDigits(input, i, &result_start) *

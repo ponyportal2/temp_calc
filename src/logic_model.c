@@ -8,7 +8,8 @@ const int calc_kUninit = -68;
 #define CALC_STR(X) CALC_STR_(X)
 #define CALC_SPRINTF_PRECISION 10
 
-void CalcErrorMessage(int error_enum, char *error_message) {
+void CalcErrorMessage(enum calc_CalculationError error_enum,
+                      char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
   const char *BracketsAreInvaild_message = "Brackets are invalid";
@@ -214,7 +215,7 @@ void Calculate(view_to_calc_struct view_to_calc,
     char expression[calc_kMaxStrSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
     enum calc_CalculationError expression_error = Validation(expression);
-    if (expression_error == calcerr_kNoError) {
+    if (!expression_error) {
       TransformUnariesModAndSpaces(expression);
       AddMultSigns(expression);
       AddOuterBrackets(expression);
@@ -227,19 +228,17 @@ void Calculate(view_to_calc_struct view_to_calc,
         char left[calc_kMaxStrSize] = {0}, middle[calc_kMaxStrSize] = {0},
              right[calc_kMaxStrSize] = {0};
         missing_brackets = FindDeepestBrackets(expression, &start, &end);
-        if (!missing_brackets) {
-          ThreeWaySplit(expression, left, middle, right, start, end);
-          expression_error = ParseAndApplyOperators(middle);
-          if (!expression_error) {
-            Recombine(expression, left, middle, right);
-            missing_brackets = FindDeepestBrackets(expression, &start, &end);
-            expression_error = unfoldBrackets(expression, start, end);
-            if (!DoesHaveBrackets(expression) && !IsJustANumber(expression)) {
-              AddOuterBrackets(expression);
-            } else if (!DoesHaveBrackets(expression)) {
-              calc_finished = true;
-            }
-          }
+        if (missing_brackets) break;
+        ThreeWaySplit(expression, left, middle, right, start, end);
+        expression_error = ParseAndApplyOperators(middle);
+        if (expression_error) break;
+        Recombine(expression, left, middle, right);
+        missing_brackets = FindDeepestBrackets(expression, &start, &end);
+        expression_error = unfoldBrackets(expression, start, end);
+        if (!DoesHaveBrackets(expression) && !IsJustANumber(expression)) {
+          AddOuterBrackets(expression);
+        } else if (!DoesHaveBrackets(expression)) {
+          calc_finished = true;
         }
         if (strcmp(prev_expression, expression) == 0) calc_finished = true;
       }
@@ -480,15 +479,6 @@ void AddMultSigns(char *input) {
   }
 }
 
-int OperCount(char *input_str) {
-  char *to_match = "+-*/^%";
-  int oper_counter = 0;
-  for (int i; input_str[i] != '\0'; ++i) {
-    if (VasCharMatch(input_str[i], to_match) == true) ++oper_counter;
-  }
-  return oper_counter;
-}
-
 void Recombine(char *input_str, char *left, char *middle, char *right) {
   strcpy(input_str, left);
   strcat(input_str, middle);
@@ -528,20 +518,20 @@ long double GetLeftOrRightDigits(char *input, int oper_position,
   return strtold(final_number, NULL);
 }
 
-int ParseAndApplyOperators(char *mid_str) {
+int OperCount(char *input) { return VasCountOfChars(input, "^/*%-+"); }
+
+int ParseAndApplyOperators(char *mid_inp) {
   enum calc_CalculationError err = 0;
   bool loop_break = false;
-  while (loop_break == false) {
-    if (err = OperatorPassLoop(mid_str, "^")) break;
-    if (err = OperatorPassLoop(mid_str, "/*%")) break;
-    while (VasCountOfChars(mid_str, "-") != 0) {
-      if (mid_str[0] == '-' && OperCount(mid_str) == 1) mid_str[0] = '~';
-      if (err = OperatorPassLoop(mid_str, "-+")) break;
+  while (1) {
+    if (err = OperatorPassLoop(mid_inp, "^")) break;
+    if (err = OperatorPassLoop(mid_inp, "/*%")) break;
+    while (VasCountOfChars(mid_inp, "-") > 0) {
+      if (mid_inp[0] == '-' && OperCount(mid_inp) == 1) mid_inp[0] = '~';
+      if (err = OperatorPassLoop(mid_inp, "-+")) break;
     }
-    if (err = OperatorPassLoop(mid_str, "-+")) break;
-    if (OperCount(mid_str) < 1 || IsJustANumber(mid_str)) {
-      loop_break = true;
-    }
+    if (err = OperatorPassLoop(mid_inp, "-+")) break;
+    if (OperCount(mid_inp) < 1 || IsJustANumber(mid_inp)) break;
   }
   return err;
 }
@@ -549,7 +539,7 @@ int ParseAndApplyOperators(char *mid_str) {
 int OperatorPassLoop(char *input_mid, char *op_char) {
   enum calc_CalculationError err = 0;
   bool loop_break = false;
-  while (VasCountOfChars(input_mid, op_char) != 0 && loop_break == false) {
+  while (VasCountOfChars(input_mid, op_char) > 0 && loop_break == false) {
     if (err = OperatorPass(input_mid, op_char)) loop_break = true;
   }
   return err;
@@ -560,8 +550,8 @@ int OperatorPass(char *input, char *op_char) {
   int i = 0, res_start = calc_kUninit, res_end = calc_kUninit;
   long double result = 0.0L;
   char char_array_result[calc_kMaxStrSize] = {0};
-  bool loop_break = false;
-  while (input[i] != '\0' && loop_break == false) {
+  bool zero_div = false;
+  while (input[i] != '\0' && !zero_div) {
     if (VasCharMatch(input[i], op_char)) {
       switch (input[i]) {
         case '^':
@@ -574,11 +564,11 @@ int OperatorPass(char *input, char *op_char) {
           result = LNum(input, i, &res_start) * RNum(input, i, &res_end);
           break;
         case '/':
-          if (RNum(input, i, &res_end) != 0) {
-            result = LNum(input, i, &res_start) / RNum(input, i, &res_end);
-          } else {
+          if (RNum(input, i, &res_end) == 0) {
+            zero_div == true;
             err = calcerr_kDivisionByZero;
-            loop_break = true;
+          } else {
+            result = LNum(input, i, &res_start) / RNum(input, i, &res_end);
           }
           break;
         case '+':
@@ -621,21 +611,14 @@ void ThreeWaySplit(char *input, char *left, char *middle, char *right,
 bool IsJustANumber(char *input_str) {
   char to_match[calc_kMaxStrSize] = "0123456789. inf NAN nan";
   int i = 0;
-  bool is_just_a_number = true;
-  if (strlen(input_str) > 0) {
-    if (input_str[0] == '-' || input_str[0] == '~') i = 1;
-    bool loop_break = false;
-    while (loop_break == false && input_str[i] != '\0') {
-      if (VasCharMatch(input_str[i], to_match) == false) {
-        is_just_a_number = false;
-        loop_break = true;
-      }
-      ++i;
-    }
-  } else {
-    is_just_a_number = false;  // empty string
+  bool is_num = true;
+  if (strlen(input_str) == 0) is_num = false;
+  if (input_str[0] == '-' || input_str[0] == '~') i = 1;
+  while (is_num && input_str[i] != '\0') {
+    if (VasCharMatch(input_str[i], to_match) == false) is_num = false;
+    ++i;
   }
-  return is_just_a_number;
+  return is_num;
 }
 
 // FOR DEBUGGING:
