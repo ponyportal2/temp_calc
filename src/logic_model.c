@@ -279,18 +279,8 @@ void AddOuterBrackets(char *input_str) {
   strcpy(input_str, temp_str);
 }
 
-bool doesHaveBrackets(char *inputStr) {
-  bool yesItDoesHaveBrackets = false;
-  int i = 0;
-  bool whileBreak = false;
-  while (inputStr[i] != '\0' && whileBreak == false) {
-    if (inputStr[i] == '(' || inputStr[i] == ')') {
-      yesItDoesHaveBrackets = true;
-      whileBreak = true;
-    }
-    ++i;
-  }
-  return yesItDoesHaveBrackets;
+bool doesHaveBrackets(char *input_str) {
+  return (VasCharMatch('(', input_str) || VasCharMatch(')', input_str));
 }
 
 void ReplaceX(char *input_str, const char *input_x) {
