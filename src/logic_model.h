@@ -14,10 +14,6 @@
 // #include <unistd.h>
 #endif
 
-#define STR_(X) #X
-#define STR(X) STR_(X)
-
-#define SPRINTF_PRECISION 10
 #define MAX_SOLVER_LOOPS 10000
 #define MAX_CALCULATIONS 10000
 
@@ -38,9 +34,14 @@
 
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
-void ThreeWaySplit(char *input_str, char left[calc_kMaxStringSize],
-                   char middle[calc_kMaxStringSize],
-                   char right[calc_kMaxStringSize], int start, int end);
+enum calc_CalculationError {
+  calcerr_kNoError = 0,
+  calcerr_kDivisionByZero,
+  calcerr_kNan,
+  calcerr_kBracketsAreInvaild,
+  calcerr_kInvalidSymbols
+};
+
 void TestCalculate(char *input, char *output, int dummy);
 void UnlockCalculate();
 
@@ -51,6 +52,9 @@ int Validation(const char *expression);
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view);
 
+void CalculatorOutput(char *expression, char *output_answer,
+                      enum calc_CalculationError calc_error);
+
 void unfoldHelper(long double (*f)(long double), char *left, char *middle,
                   char *right, char *inputStr, int howManyLetters, int *err);
 bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
@@ -59,26 +63,27 @@ void linearSolver(char *expression, long double expectedAnswer);
 void ReplaceX(char *input_str, const char *input_x);
 void addMultSignsToBrackets(char *inputStr);
 void printHelper(char *inputStr);
-void sprintfHelper(char *tempStr, long double calcResult);
-void ThreeWaySplit(char *inputStr, char left[calc_kMaxStringSize],
-                   char middle[calc_kMaxStringSize],
-                   char right[calc_kMaxStringSize], int start, int end);
-int findDeepestBrackets(char *inputStr, int *startIn, int *endIn);
+void SprintfHelper(char *tempStr, long double calcResult);
+void ThreeWaySplit(char *input_str, char *left, char *middle, char *right,
+                   int start, int end);
+int FindDeepestBrackets(char *inputStr, int *startIn, int *endIn);
 void CalcErrorMessage(int error_enum, char *error_message);
+void SplitInHalf(char *input_str, char *left, char *right, int split_pos);
 bool AreBracketsValid(const char *inputStr);
 void TransformUnariesModAndSpaces(char *inputStr);
 void AddMultSigns(char *input);
-long double getLeftDigits(char *inputStr, int operatorPos, int *digitsEnd);
-long double getRightDigits(char *inputStr, int operatorPos, int *digitsEnd);
-int parseAndApplyOperators(char *midStr);
+long double LNum(char *inputStr, int operatorPos, int *digitsEnd);
+long double RNum(char *inputStr, int operatorPos, int *digitsEnd);
+int ParseAndApplyOperators(char *midStr);
 void ourGcvt(long double value, char *buf, int ndigit);
 bool zeroZeroes(char *str);
 void nullCharArray(char *inputStr);
-int operatorPass(char *inputMid, char opChar);
+int OperatorPass(char *inputMid, char *opChar);
 void CleanUpSpaces(char *inputStr);
-int operatorCount(char *inputStr);
-void recombine(char *inputStr, char *left, char *middle, char *right);
-bool isJustANumber(char *inputStr);
+int OperCount(char *inputStr);
+void Recombine(char *inputStr, char *left, char *middle, char *right);
+bool IsJustANumber(char *inputStr);
+bool MultidotError(const char *input_str);
 void AddOuterBrackets(char *inputStr);
 bool doesHaveBrackets(char *inputStr);
 int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
@@ -86,10 +91,10 @@ void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);
 int unfoldBrackets(char *inputStr, int startIn, int endIn);
-long double getLRDigits(char *inputMid, int operatorPos, int *digitsEnd,
-                        bool isLeft);
-long double getRightDigits(char *inputMid, int operatorPos, int *digitsEnd);
-long double getLeftDigits(char *inputMid, int operatorPos, int *digitsEnd);
-int operatorPassLoop(char *inputMid, char *opChar);
+long double GetLeftOrRightDigits(char *inputMid, int operatorPos,
+                                 int *digitsEnd, bool isLeft);
+long double RNum(char *inputMid, int operatorPos, int *digitsEnd);
+long double LNum(char *inputMid, int operatorPos, int *digitsEnd);
+int OperatorPassLoop(char *inputMid, char *opChar);
 void sravnenieSC();
 #endif  // CALC_LOGIC_MODEL_H_

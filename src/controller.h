@@ -2,7 +2,7 @@
 #define CALC_CONTROLLER_H_
 #include <stdbool.h>
 
-#define calc_kMaxStringSize 16384
+#define calc_kMaxStrSize 16384
 
 enum CalculationType { calc_kSolve = 0, calc_kCalculate, calc_kCalculateWithX };
 

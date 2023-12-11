@@ -60,11 +60,82 @@ ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
 #test calc6
 
+char expression[MAX_STRING_SIZE] = "5*6/7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("4.2857142857", outputStr);
+
+// TEST7
+
+#test calc7
+
+char expression[MAX_STRING_SIZE] = "5/6*7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("5.8333333331", outputStr);
+
+// TEST8
+
+#test calc8
+
+char expression[MAX_STRING_SIZE] = "5-6+7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("6.0", outputStr);
+
+// TEST9
+
+#test calc9
+
+char expression[MAX_STRING_SIZE] = "5+6-7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("4.0", outputStr);
+
+// TEST10
+
+#test calc10
+
 char expression[MAX_STRING_SIZE] = "-(-5+aboba)"; 
 char outputStr[MAX_STRING_SIZE] = {0}; 
 TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Invalid symbols encountered", outputStr);
+
+// TEST11
+
+#test calc11
+
+char expression[MAX_STRING_SIZE] = "-5--6++7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("8.0", outputStr);
+
+// TEST12
+
+#test calc12
+
+char expression[MAX_STRING_SIZE] = "soc(0.99)"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("Invalid symbols encountered", outputStr);
+
+
+// TEST13
+
+#test calc13
+
+char expression[MAX_STRING_SIZE] = "5+-6-+7"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("-8.0", outputStr);
 
 // ------
 // WITH X
@@ -503,7 +574,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_VAL_2
 
@@ -515,7 +586,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_VAL_3
 
@@ -527,7 +598,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_VAL_4
 
@@ -539,7 +610,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 
 // TESTX_VAL_5
@@ -552,7 +623,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_VAL_6
 
@@ -564,7 +635,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_VAL_7
 
@@ -576,7 +647,7 @@ char outputStr[MAX_STRING_SIZE] = {0};
 ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
-ck_assert_ldouble_eq_tol(strtold("Invalid symbols encountered",NULL), strtold(outputStr,NULL), EPS);
+ck_assert_str_eq("Invalid symbols encountered",outputStr);
 
 // TESTX_E_18
 
@@ -590,9 +661,9 @@ TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("NAN encountered during calculation", outputStr);
 
-// TESTX_E_5
+// TESTX_E_69
 
-#test calcx_E_5
+#test calcx_E_69
 
 char expression[MAX_STRING_SIZE] = "45/x";
 char x[MAX_STRING_SIZE] = "0";
@@ -601,3 +672,28 @@ ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Division by zero is impossible", outputStr);
+
+// TESTX_E_69_2
+
+#test calcx_E_69_2
+
+char expression[MAX_STRING_SIZE] = "45.0.0/x";
+char x[MAX_STRING_SIZE] = "0";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+ReplaceX(expression, x);
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("Invalid symbols encountered", outputStr);
+
+
+// TESTX_VAL_8
+
+#test calcx_VAL_8
+
+char expression[MAX_STRING_SIZE] = "-(-(-3*(-(-(3*4+x*-6+-3/-4+5+7)*(2/5)+4/(9-5*(5/6))))-5)-s(6))";
+char x[MAX_STRING_SIZE] = "-5678.1234";
+char outputStr[MAX_STRING_SIZE] = {0}; 
+ReplaceX(expression, x);
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("Invalid symbols encountered",outputStr);

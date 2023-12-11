@@ -1,3 +1,58 @@
+// if (input[i] == op_char) {
+//   if (op_char == '*') {
+//     calc_result = (long double)LeftDigits(input, i, &result_start) *
+//                   (long double)RightDigits(input, i, &result_end);
+//     sprintfHelper(sprintf_result, calc_result);
+//   } else if (op_char == '/') {
+//     if (RightDigits(input, i, &result_end) != 0) {
+//       calc_result = (long double)LeftDigits(input, i, &result_start) /
+//                     (long double)RightDigits(input, i, &result_end);
+//     } else {
+//       err = calcerr_kDivisionByZero;
+//       loop_break = true;
+//     }
+//     break;
+//   } else if (op_char == '+') {
+//     calc_result = (long double)LeftDigits(input, i, &result_start) +
+//                   (long double)RightDigits(input, i, &result_end);
+//   } else if (op_char == '-') {
+//     calc_result = (long double)LeftDigits(input, i, &result_start) -
+//                   (long double)RightDigits(input, i, &result_end);
+//   } else if (op_char == '^') {
+//     calc_result = powl(LeftDigits(input, i, &result_start),
+//                        RightDigits(input, i, &result_end));
+//   } else if (op_char == "%") {
+//     calc_result = fmodl(LeftDigits(input, i, &result_start),
+//                         RightDigits(input, i, &result_end));
+//   }
+// }
+
+// int parseAndApplyOperators(char *midStr) {
+//   enum calc_CalculationError err = 0;
+//   bool loop_break = false;
+//   while (loop_break == false) {
+//     if (err = operatorPassLoop(midStr, "^")) loop_break = true;
+//     if (err = operatorPassLoop(midStr, "/")) loop_break = true;
+//     if (err = operatorPassLoop(midStr, "*")) loop_break = true;
+//     if (err = operatorPassLoop(midStr, "%")) loop_break = true;
+//     while (VasCountOfChars(midStr, "-") != 0) {
+//       if (midStr[0] == '-' && operatorCount(midStr) == 1) midStr[0] = '~';
+//       if (VasCountOfChars(midStr, "~") == 1 && midStr[0] != '~') {
+//         VasReplace(midStr, "~", "-");
+//       }
+//       if (operatorPassLoop(midStr, "-")) loop_break = true;
+//     }
+//     err = operatorPassLoop(midStr, "+");
+//     if (err != 0) break;
+//     if (operatorCount(midStr) < 1 || isJustANumber(midStr)) {
+//       loop_break = true;
+//     }
+//   }
+//   return err;
+// }
+
+// -------------------
+
 // TESTSOLVER2
 
 // #test solver2

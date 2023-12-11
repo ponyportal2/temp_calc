@@ -53,10 +53,10 @@ int main() {
   GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
   InitAudioDevice();
   Sound fx_wav = LoadSound("a.wav");
-  char input_box_text[calc_kMaxStringSize] = {0};
-  char x_box_text[calc_kMaxStringSize] = {0};
-  char solver_box_text[calc_kMaxStringSize] = {0};
-  char output_box_text[calc_kMaxStringSize] = {0};
+  char input_box_text[calc_kMaxStrSize] = {0};
+  char x_box_text[calc_kMaxStrSize] = {0};
+  char solver_box_text[calc_kMaxStrSize] = {0};
+  char output_box_text[calc_kMaxStrSize] = {0};
   // Copying default text to text fields
   strcpy(input_box_text, calc_kInputBoxDefaultText);
   strcpy(x_box_text, calc_kXBoxDefaultText);
@@ -103,7 +103,7 @@ int main() {
         calc_kScreenWidth - (calc_kScreenWidth * 0.30) - margin * 2;
     if (GuiTextBox((Rectangle){margin + q, calc_kScreenHeight - margin * 3 + q,
                                ui_input_wid_end, margin},
-                   input_box_text, calc_kMaxStringSize, input_box_edit_mode)) {
+                   input_box_text, calc_kMaxStrSize, input_box_edit_mode)) {
       input_box_edit_mode = !input_box_edit_mode;
     }
     // Output box:
@@ -112,21 +112,20 @@ int main() {
             ui_input_wid_end + margin + q, calc_kScreenHeight - margin * 3 + q,
             calc_kScreenWidth - (calc_kScreenWidth * 0.637) - margin * 2,
             margin},
-        output_box_text, calc_kMaxStringSize, false);
+        output_box_text, calc_kMaxStrSize, false);
     // X input:
     int x_input_wid_end = calc_kScreenWidth / 2 - margin * 2;
     if (GuiTextBox(
             (Rectangle){margin * 2 + q, calc_kScreenHeight - margin * 4 + q,
                         x_input_wid_end, margin},
-            x_box_text, calc_kMaxStringSize, x_box_edit_mode)) {
+            x_box_text, calc_kMaxStrSize, x_box_edit_mode)) {
       x_box_edit_mode = !x_box_edit_mode;
     }
     // Solver answer input:
     if (GuiTextBox((Rectangle){x_input_wid_end + margin * 2 + q,
                                calc_kScreenHeight - margin * 4 + q,
                                calc_kScreenWidth / 2 - margin, margin},
-                   solver_box_text, calc_kMaxStringSize,
-                   solver_box_edit_mode)) {
+                   solver_box_text, calc_kMaxStrSize, solver_box_edit_mode)) {
       solver_box_edit_mode = !solver_box_edit_mode;
     }
     // Clear button:
@@ -149,12 +148,12 @@ int main() {
     GuiTextBox(
         (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                     (float)calc_kScreenHeight / 2 - margin * 6 + q + 30, 0, 0},
-        "y: 1000000", calc_kMaxStringSize, false);
+        "y: 1000000", calc_kMaxStrSize, false);
     // X scale label:
     GuiTextBox(
         (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6 + q,
                     (float)calc_kScreenHeight / 2 - margin + q - 10, 0, 0},
-        "x: -1000000", calc_kMaxStringSize, false);
+        "x: -1000000", calc_kMaxStrSize, false);
     // Calculate logic:
     GuiSetState(STATE_NORMAL);
     if (GuiButton(
@@ -212,7 +211,7 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
                    int meme_mode, Sound input_sound, calc_dot* graph_dots) {
   bool x_input_error = 0;
-  char result_text[calc_kMaxStringSize] = {0};
+  char result_text[calc_kMaxStrSize] = {0};
   ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
@@ -229,15 +228,15 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
     view_to_calc.calculation_type = calc_kCalculate;
   }
   if (view_to_calc.calculation_type == calc_kCalculate) {
-    view_to_calc.calc_input = (char*)calloc(calc_kMaxStringSize, sizeof(char));
-    calc_to_view.answer = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    view_to_calc.calc_input = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+    calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
     strcpy(view_to_calc.calc_input, input_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_text, calc_to_view.answer);
   } else if (view_to_calc.calculation_type == calc_kCalculateWithX) {
-    view_to_calc.calc_input = (char*)calloc(calc_kMaxStringSize, sizeof(char));
-    calc_to_view.answer = (char*)calloc(calc_kMaxStringSize, sizeof(char));
-    view_to_calc.x_variable = (char*)calloc(calc_kMaxStringSize, sizeof(char));
+    view_to_calc.calc_input = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+    calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+    view_to_calc.x_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
     strcpy(view_to_calc.calc_input, input_box_text);
     strcpy(view_to_calc.x_variable, x_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);

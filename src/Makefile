@@ -23,6 +23,7 @@ HEADERSGCOV=  controller.h logic_model.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
 com=
+SAN=-fsanitize=address
 # -----------------
 
 all: styleforce build
@@ -86,6 +87,11 @@ dvi:
 test: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV} 
 	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
 	gcc $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
+	./test_check ${INPUT}
+
+santest: clean ${SOURCESGCOVNOTESTCHECK} ${HEADERSGCOV} 
+	checkmk clean_mode=1 ${CHECKFILE} > test_check.c
+	gcc $(SAN) $(SYSFLAG) ${SOURCESGCOV} $(LFLAGS) $(GFLAGS) -g -o test_check
 	./test_check ${INPUT}
 
 gcov_report:
