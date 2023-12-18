@@ -21,18 +21,6 @@
 #define INFI 9999999999999999999999999999999999999999999999999999999999999999.0L
 #define UNINIT -68
 
-// LEFT BRACKET OPERATIONS:
-#define BR_OPER_MINUS 1
-#define BR_OPER_ACOS 2
-#define BR_OPER_ASIN 3
-#define BR_OPER_ATAN 4
-#define BR_OPER_SQRT 5
-#define BR_OPER_COS 6
-#define BR_OPER_SIN 7
-#define BR_OPER_TAN 8
-#define BR_OPER_LOG 9
-#define BR_OPER_LN 10
-
 #define TEMPXNUMLINDIA 6001.0L  // linear solver range
 
 enum calc_Err {
@@ -89,7 +77,7 @@ bool IsJustANumber(char *inputStr);
 bool MultidotError(const char *input_str);
 void AddOuterBrackets(char *inputStr);
 bool DoesHaveBrackets(char *inputStr);
-int checkLeftBracketOper(char *leftStr, int leftBracketIdx);
+enum calc_Oper checkLeftBracketOper(char *left_str, int left_bracket_idx);
 void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);

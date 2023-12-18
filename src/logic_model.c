@@ -8,6 +8,32 @@ const int calc_kUninit = -68;
 #define CALC_STR(X) CALC_STR_(X)
 #define CALC_SPRINTF_PRECISION 10
 
+enum calc_Oper {
+  calc_Oper_kNone = 0,
+  calc_Oper_kMinus,
+  calc_Oper_kAcos,
+  calc_Oper_kAsin,
+  calc_Oper_kAtan,
+  calc_Oper_kSqrt,
+  calc_Oper_kCos,
+  calc_Oper_kSin,
+  calc_Oper_kTan,
+  calc_Oper_kLog,
+  calc_Oper_kLn,
+};
+
+// LEFT BRACKET OPERATIONS:
+#define CALC_OPER_MINUS 1
+#define CALC_OPER_ACOS 2
+#define CALC_OPER_ASIN 3
+#define CALC_OPER_ATAN 4
+#define CALC_OPER_SQRT 5
+#define CALC_OPER_COS 6
+#define CALC_OPER_SIN 7
+#define CALC_OPER_TAN 8
+#define CALC_OPER_LOG 9
+#define CALC_OPER_LN 10
+
 void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
@@ -323,50 +349,48 @@ int FindDeepestBrackets(char *input_str, int *start_in, int *end_in) {
   return has_error;
 }
 
-enum calc_Err unfoldBrackets(char *inputStr, int startIn, int endIn) {
-  int oper = checkLeftBracketOper(inputStr, startIn);
-  char left[calc_kMaxStrSize] = {0};
-  char middle[calc_kMaxStrSize] = {0};
-  char right[calc_kMaxStrSize] = {0};
-  char tempStr[calc_kMaxStrSize] = {0};
-  enum calc_Err err = calc_Err_kOk;  // error for the return
-  ThreeWaySplit(inputStr, left, middle, right, startIn, endIn);
-  if (oper == BR_OPER_MINUS) {
-    if (middle[0] == '~') {
-      strcpy(tempStr, (char *)middle + 1);
-    } else if (middle[0] != '~') {
-      strcat(tempStr, "~");
-      strcat(tempStr, middle);
+enum calc_Err unfoldBrackets(char *input_str, int start_in, int end_in) {
+  enum calc_Oper oper = checkLeftBracketOper(input_str, start_in);
+  char left[calc_kMaxStrSize] = {0}, mid[calc_kMaxStrSize] = {0},
+       right[calc_kMaxStrSize] = {0}, temp_str[calc_kMaxStrSize] = {0};
+  enum calc_Err err = calc_Err_kOk;
+  ThreeWaySplit(input_str, left, mid, right, start_in, end_in);
+  if (oper == CALC_OPER_MINUS) {
+    if (mid[0] == '~') {
+      strcpy(temp_str, (char *)mid + 1);
+    } else if (mid[0] != '~') {
+      strcat(temp_str, "~");
+      strcat(temp_str, mid);
     }
-    strcpy(middle, tempStr);
+    strcpy(mid, temp_str);
     DeleteBrackets(left, right);
     left[strlen(left) - 1] = '\0';
-    Recombine(inputStr, left, middle, right);
-  } else if (oper == BR_OPER_ACOS) {
-    unfoldHelper(acosl, left, middle, right, inputStr, 4, &err);
-  } else if (oper == BR_OPER_ASIN) {
-    unfoldHelper(asinl, left, middle, right, inputStr, 4, &err);
-  } else if (oper == BR_OPER_ATAN) {
-    unfoldHelper(atanl, left, middle, right, inputStr, 4, &err);
-  } else if (oper == BR_OPER_SQRT) {
-    if (middle[0] != '-' && middle[0] != '~') {
-      unfoldHelper(sqrtl, left, middle, right, inputStr, 4, &err);
-    } else {  // negative sqrt is a complex number
+    Recombine(input_str, left, mid, right);
+  } else if (oper == CALC_OPER_ACOS) {
+    unfoldHelper(acosl, left, mid, right, input_str, 4, &err);
+  } else if (oper == CALC_OPER_ASIN) {
+    unfoldHelper(asinl, left, mid, right, input_str, 4, &err);
+  } else if (oper == CALC_OPER_ATAN) {
+    unfoldHelper(atanl, left, mid, right, input_str, 4, &err);
+  } else if (oper == CALC_OPER_SQRT) {
+    if (mid[0] == '-' || mid[0] == '~') {  // negative sqrt is a complex number
       err = calc_Err_kNan;
+    } else {
+      unfoldHelper(sqrtl, left, mid, right, input_str, 4, &err);
     }
-  } else if (oper == BR_OPER_COS) {
-    unfoldHelper(cosl, left, middle, right, inputStr, 3, &err);
-  } else if (oper == BR_OPER_SIN) {
-    unfoldHelper(sinl, left, middle, right, inputStr, 3, &err);
-  } else if (oper == BR_OPER_TAN) {
-    unfoldHelper(tanl, left, middle, right, inputStr, 3, &err);
-  } else if (oper == BR_OPER_LOG) {
-    unfoldHelper(log10l, left, middle, right, inputStr, 3, &err);
-  } else if (oper == BR_OPER_LN) {
-    unfoldHelper(logl, left, middle, right, inputStr, 2, &err);
+  } else if (oper == CALC_OPER_COS) {
+    unfoldHelper(cosl, left, mid, right, input_str, 3, &err);
+  } else if (oper == CALC_OPER_SIN) {
+    unfoldHelper(sinl, left, mid, right, input_str, 3, &err);
+  } else if (oper == CALC_OPER_TAN) {
+    unfoldHelper(tanl, left, mid, right, input_str, 3, &err);
+  } else if (oper == CALC_OPER_LOG) {
+    unfoldHelper(log10l, left, mid, right, input_str, 3, &err);
+  } else if (oper == CALC_OPER_LN) {
+    unfoldHelper(logl, left, mid, right, input_str, 2, &err);
   } else if (oper == 0) {
     DeleteBrackets(left, right);
-    Recombine(inputStr, left, middle, right);
+    Recombine(input_str, left, mid, right);
   }
   return err;
 }
@@ -383,42 +407,37 @@ void unfoldHelper(long double (*f)(long double), char *left, char *middle,
   Recombine(inputStr, left, middle, right);
 }
 
-int checkLeftBracketOper(char *leftStr, int leftBracketIdx) {
-  int leftBracketOperation = 0;
-  int i = leftBracketIdx;
-  char minFour = calc_kUninit;
-  char minThree = calc_kUninit;
-  char minTwo = calc_kUninit;
-  char minOne = calc_kUninit;
-  if ((leftStr[i - 4]) > -1) minFour = leftStr[i - 4];
-  if ((leftStr[i - 3]) > -1) minThree = leftStr[i - 3];
-  if ((leftStr[i - 2]) > -1) minTwo = leftStr[i - 2];
-  if ((leftStr[i - 1]) > -1) minOne = leftStr[i - 1];
-  if (minFour == 'a' && minThree == 'c' && minTwo == 'o' && minOne == 's') {
-    leftBracketOperation = BR_OPER_ACOS;
-  } else if (minFour == 'a' && minThree == 's' && minTwo == 'i' &&
-             minOne == 'n') {
-    leftBracketOperation = BR_OPER_ASIN;
-  } else if (minFour == 'a' && minThree == 't' && minTwo == 'a' &&
-             minOne == 'n') {
-    leftBracketOperation = BR_OPER_ATAN;
-  } else if (minFour == 's' && minThree == 'q' && minTwo == 'r' &&
-             minOne == 't') {
-    leftBracketOperation = BR_OPER_SQRT;
-  } else if (minThree == 'c' && minTwo == 'o' && minOne == 's') {
-    leftBracketOperation = BR_OPER_COS;
-  } else if (minThree == 's' && minTwo == 'i' && minOne == 'n') {
-    leftBracketOperation = BR_OPER_SIN;
-  } else if (minThree == 't' && minTwo == 'a' && minOne == 'n') {
-    leftBracketOperation = BR_OPER_TAN;
-  } else if (minThree == 'l' && minTwo == 'o' && minOne == 'g') {
-    leftBracketOperation = BR_OPER_LOG;
-  } else if (minTwo == 'l' && minOne == 'n') {
-    leftBracketOperation = BR_OPER_LN;
-  } else if (minOne == '_') {
-    leftBracketOperation = BR_OPER_MINUS;
+enum calc_Oper checkLeftBracketOper(char *left_str, int left_bracket_idx) {
+  enum calc_Oper left_bracket_oper = calc_Oper_kNone;
+  int i = left_bracket_idx;
+  char temp_str[5] = {0};
+  VasClearCharArray(temp_str, 5);
+  for (int j = 1; j <= 4; ++j) {
+    if (left_str[i - j] > -1) temp_str[j - 1] = left_str[i - j];
   }
-  return leftBracketOperation;
+  VasReverseCharArray(temp_str);
+  if (strstr(temp_str, "acos")) {
+    left_bracket_oper = calc_Oper_kAcos;
+  } else if (strstr(temp_str, "asin")) {
+    left_bracket_oper = calc_Oper_kAsin;
+  } else if (strstr(temp_str, "atan")) {
+    left_bracket_oper = calc_Oper_kAtan;
+  } else if (strstr(temp_str, "sqrt")) {
+    left_bracket_oper = calc_Oper_kSqrt;
+  } else if (strstr(temp_str, "cos")) {
+    left_bracket_oper = calc_Oper_kCos;
+  } else if (strstr(temp_str, "sin")) {
+    left_bracket_oper = calc_Oper_kSin;
+  } else if (strstr(temp_str, "tan")) {
+    left_bracket_oper = calc_Oper_kTan;
+  } else if (strstr(temp_str, "log")) {
+    left_bracket_oper = calc_Oper_kLog;
+  } else if (strstr(temp_str, "ln")) {
+    left_bracket_oper = calc_Oper_kLn;
+  } else if (strstr(temp_str, "_")) {
+    left_bracket_oper = calc_Oper_kMinus;
+  }
+  return left_bracket_oper;
 }
 
 void DeleteBrackets(char *left, char *right) {

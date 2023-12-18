@@ -86,7 +86,11 @@ void VasCleanUpTrailingZeroes(char *input_str) {
       } else {
         loop_break = true;
       }
-      i--;
+      --i;
     }
   }
+}
+
+void VasClearCharArray(char *input_str, int array_size) {
+  for (int i = 0; i < array_size; ++i) input_str[i] = '\0';
 }
