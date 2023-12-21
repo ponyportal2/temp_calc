@@ -20,19 +20,19 @@ enum calc_Oper {
   calc_Oper_kTan,
   calc_Oper_kLog,
   calc_Oper_kLn,
+  calc_Oper_kError
 };
 
-// LEFT BRACKET OPERATIONS:
-#define CALC_OPER_MINUS 1
-#define CALC_OPER_ACOS 2
-#define CALC_OPER_ASIN 3
-#define CALC_OPER_ATAN 4
-#define CALC_OPER_SQRT 5
-#define CALC_OPER_COS 6
-#define CALC_OPER_SIN 7
-#define CALC_OPER_TAN 8
-#define CALC_OPER_LOG 9
-#define CALC_OPER_LN 10
+const char *acos_str = "acos";
+const char *asin_str = "asin";
+const char *atan_str = "atan";
+const char *sqrt_str = "sqrt";
+const char *cos_str = "cos";
+const char *sin_str = "sin";
+const char *tan_str = "tan";
+const char *log_str = "log";
+const char *ln_str = "ln";
+const char *m_str = "_";
 
 void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
@@ -51,7 +51,8 @@ void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
 }
 
 // Binary search solver:
-// bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
+// bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool
+// dir,
 //                         char *possibleAnswer) {
 //   long double expectedAnswer = 0.0L;
 //   expectedAnswer = strtold(expectedAnswerStr, NULL);
@@ -161,7 +162,8 @@ void TestCalculate(char *input, char *output, int dummy) {
 
 bool ContainsInvalidCharacters(const char *input_str) {
   const char *kAllowedCharacters =
-      "0123456789 +-*/% . ( ) cos sin tan acos asin atan sqrt ln log ^ e mod ~";
+      "0123456789 +-*/% . ( ) cos sin tan acos asin atan sqrt ln log ^ e mod "
+      "~";
   bool it_does = false;
   for (int i = 0; input_str[i] != '\0'; ++i) {
     if (VasCharMatch(input_str[i], kAllowedCharacters) == 0) {
@@ -259,8 +261,10 @@ void Calculate(view_to_calc_struct view_to_calc,
         if (expression_error) break;
         Recombine(expression, left, middle, right);
         missing_brackets = FindDeepestBrackets(expression, &start, &end);
-        expression_error = unfoldBrackets(expression, start, end);
+        expression_error = UnfoldBrackets(expression, start, end);
         if (!DoesHaveBrackets(expression) && !IsJustANumber(expression)) {
+          TransformUnariesModAndSpaces(expression);
+          AddMultSigns(expression);
           AddOuterBrackets(expression);
         } else if (!DoesHaveBrackets(expression)) {
           calc_finished = true;
@@ -349,65 +353,80 @@ int FindDeepestBrackets(char *input_str, int *start_in, int *end_in) {
   return has_error;
 }
 
-enum calc_Err unfoldBrackets(char *input_str, int start_in, int end_in) {
-  enum calc_Oper oper = checkLeftBracketOper(input_str, start_in);
+enum calc_Err UnfoldBrackets(char *input_str, int start_in, int end_in) {
+  // Checking unfold logic:
+  // enum calc_Oper left_bracket_oper = calc_Oper_kNone;
+  // int i = start_in;  // left bracket index
+  // char temp_str[5] = {0};
+  // VasClearCharArray(temp_str, 5);
+  // for (int j = 1; j <= 4; ++j) {
+  //   if (input_str[i - j] > -1) temp_str[j - 1] = input_str[i - j];
+  // }
+  // VasReverseCharArray(temp_str);
+  // Checking unfold logic END
+
+  // Main unfold Params and Logic:
+  enum calc_Oper oper = CheckLeftBracketOper(input_str, start_in);
   char left[calc_kMaxStrSize] = {0}, mid[calc_kMaxStrSize] = {0},
        right[calc_kMaxStrSize] = {0}, temp_str[calc_kMaxStrSize] = {0};
   enum calc_Err err = calc_Err_kOk;
   ThreeWaySplit(input_str, left, mid, right, start_in, end_in);
-  if (oper == CALC_OPER_MINUS) {
+  // Main unfold Params and Logic END
+  if (oper == calc_Oper_kMinus) {
     if (mid[0] == '~') {
-      strcpy(temp_str, (char *)mid + 1);
+      mid[0] = '+';
     } else if (mid[0] != '~') {
-      strcat(temp_str, "~");
+      strcat(temp_str, "-");
       strcat(temp_str, mid);
+      strcpy(mid, temp_str);
     }
-    strcpy(mid, temp_str);
     DeleteBrackets(left, right);
     left[strlen(left) - 1] = '\0';
     Recombine(input_str, left, mid, right);
-  } else if (oper == CALC_OPER_ACOS) {
-    unfoldHelper(acosl, left, mid, right, input_str, 4, &err);
-  } else if (oper == CALC_OPER_ASIN) {
-    unfoldHelper(asinl, left, mid, right, input_str, 4, &err);
-  } else if (oper == CALC_OPER_ATAN) {
-    unfoldHelper(atanl, left, mid, right, input_str, 4, &err);
-  } else if (oper == CALC_OPER_SQRT) {
+  } else if (oper == calc_Oper_kAcos) {
+    UnfoldHelper(acosl, left, mid, right, input_str, 4, &err);
+  } else if (oper == calc_Oper_kAsin) {
+    UnfoldHelper(asinl, left, mid, right, input_str, 4, &err);
+  } else if (oper == calc_Oper_kAtan) {
+    UnfoldHelper(atanl, left, mid, right, input_str, 4, &err);
+  } else if (oper == calc_Oper_kSqrt) {
     if (mid[0] == '-' || mid[0] == '~') {  // negative sqrt is a complex number
       err = calc_Err_kNan;
     } else {
-      unfoldHelper(sqrtl, left, mid, right, input_str, 4, &err);
+      UnfoldHelper(sqrtl, left, mid, right, input_str, 4, &err);
     }
-  } else if (oper == CALC_OPER_COS) {
-    unfoldHelper(cosl, left, mid, right, input_str, 3, &err);
-  } else if (oper == CALC_OPER_SIN) {
-    unfoldHelper(sinl, left, mid, right, input_str, 3, &err);
-  } else if (oper == CALC_OPER_TAN) {
-    unfoldHelper(tanl, left, mid, right, input_str, 3, &err);
-  } else if (oper == CALC_OPER_LOG) {
-    unfoldHelper(log10l, left, mid, right, input_str, 3, &err);
-  } else if (oper == CALC_OPER_LN) {
-    unfoldHelper(logl, left, mid, right, input_str, 2, &err);
-  } else if (oper == 0) {
+  } else if (oper == calc_Oper_kCos) {
+    UnfoldHelper(cosl, left, mid, right, input_str, 3, &err);
+  } else if (oper == calc_Oper_kSin) {
+    UnfoldHelper(sinl, left, mid, right, input_str, 3, &err);
+  } else if (oper == calc_Oper_kTan) {
+    UnfoldHelper(tanl, left, mid, right, input_str, 3, &err);
+  } else if (oper == calc_Oper_kLog) {
+    UnfoldHelper(log10l, left, mid, right, input_str, 3, &err);
+  } else if (oper == calc_Oper_kLn) {
+    UnfoldHelper(logl, left, mid, right, input_str, 2, &err);
+  } else if (oper == calc_Oper_kError) {
+    err = calc_Err_kInvalidSymbols;
+  } else if (oper == calc_Oper_kNone) {
     DeleteBrackets(left, right);
     Recombine(input_str, left, mid, right);
   }
   return err;
 }
 
-void unfoldHelper(long double (*f)(long double), char *left, char *middle,
-                  char *right, char *inputStr, int howManyLetters,
+void UnfoldHelper(long double (*fun)(long double), char *left, char *middle,
+                  char *right, char *input_str, int how_many_letters,
                   enum calc_Err *err) {
-  SprintfHelper(middle, f(strtold(middle, NULL)));
+  SprintfHelper(middle, fun(strtold(middle, NULL)));
   if (strstr("nan", middle) || strstr("NaN", middle) || strstr("NAN", middle)) {
     *err = calc_Err_kNan;
   }
   DeleteBrackets(left, right);
-  left[strlen(left) - howManyLetters] = '\0';
-  Recombine(inputStr, left, middle, right);
+  left[strlen(left) - how_many_letters] = '\0';
+  Recombine(input_str, left, middle, right);
 }
 
-enum calc_Oper checkLeftBracketOper(char *left_str, int left_bracket_idx) {
+enum calc_Oper CheckLeftBracketOper(char *left_str, int left_bracket_idx) {
   enum calc_Oper left_bracket_oper = calc_Oper_kNone;
   int i = left_bracket_idx;
   char temp_str[5] = {0};
@@ -416,26 +435,29 @@ enum calc_Oper checkLeftBracketOper(char *left_str, int left_bracket_idx) {
     if (left_str[i - j] > -1) temp_str[j - 1] = left_str[i - j];
   }
   VasReverseCharArray(temp_str);
-  if (strstr(temp_str, "acos")) {
+  if (strstr(temp_str, acos_str)) {
     left_bracket_oper = calc_Oper_kAcos;
-  } else if (strstr(temp_str, "asin")) {
+  } else if (strstr(temp_str, asin_str)) {
     left_bracket_oper = calc_Oper_kAsin;
-  } else if (strstr(temp_str, "atan")) {
+  } else if (strstr(temp_str, atan_str)) {
     left_bracket_oper = calc_Oper_kAtan;
-  } else if (strstr(temp_str, "sqrt")) {
+  } else if (strstr(temp_str, sqrt_str)) {
     left_bracket_oper = calc_Oper_kSqrt;
-  } else if (strstr(temp_str, "cos")) {
+  } else if (strstr(temp_str, cos_str)) {
     left_bracket_oper = calc_Oper_kCos;
-  } else if (strstr(temp_str, "sin")) {
+  } else if (strstr(temp_str, sin_str)) {
     left_bracket_oper = calc_Oper_kSin;
-  } else if (strstr(temp_str, "tan")) {
+  } else if (strstr(temp_str, tan_str)) {
     left_bracket_oper = calc_Oper_kTan;
-  } else if (strstr(temp_str, "log")) {
+  } else if (strstr(temp_str, log_str)) {
     left_bracket_oper = calc_Oper_kLog;
-  } else if (strstr(temp_str, "ln")) {
+  } else if (strstr(temp_str, ln_str)) {
     left_bracket_oper = calc_Oper_kLn;
-  } else if (strstr(temp_str, "_")) {
+  } else if (strstr(temp_str, m_str)) {
     left_bracket_oper = calc_Oper_kMinus;
+  } else if (strlen(temp_str) &&
+             !VasCharMatch(temp_str[strlen(temp_str) - 1], "^+*/%(")) {
+    left_bracket_oper = calc_Oper_kError;
   }
   return left_bracket_oper;
 }
@@ -464,6 +486,7 @@ void TransformUnariesModAndSpaces(char *input) {
     }
     VasReplace(input, "(-(", "(_(");
     VasReplace(input, "mod", "  %");
+    VasReplace(input, "-(", "_(");
     VasReplace(input, "++", "+ ");
     VasReplace(input, "-+", "- ");
     VasReplace(input, "+-", "+~");
@@ -599,7 +622,6 @@ enum calc_Err OperatorPass(char *input, char *op_char) {
       }
       SprintfHelper(char_array_result, result);
       if (char_array_result[0] == '-') char_array_result[0] = '~';
-      TransformUnariesModAndSpaces(input);
       if (OperCount(input) > 0) {
         char left[calc_kMaxStrSize] = {0}, middle[calc_kMaxStrSize] = {0},
              right[calc_kMaxStrSize] = {0};

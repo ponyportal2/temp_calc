@@ -16,16 +16,6 @@ TestCalculate(expression, outputStr, 0);
 
 ck_assert_ldouble_eq_tol(strtold("10",NULL), strtold(outputStr,NULL), EPS);
 
-// TEST2
-
-#test calc2
-
-char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+-54343.43434*-6+-3/-4++5++7)))))"; 
-char outputStr[MAX_STRING_SIZE] = {0}; 
-TestCalculate(expression, outputStr, 0);
-
-ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
-
 // TEST3
 
 #test calc3
@@ -287,18 +277,6 @@ ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Brackets are invalid", outputStr);
-
-// TESTX17
-
-#test calcx17
-
-char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(x^sqrt(sqrt((5)*(+5%4)))))))))";
-char x[MAX_STRING_SIZE] = "0.5";
-char outputStr[MAX_STRING_SIZE] = {0};
-ReplaceX(expression, x);
-TestCalculate(expression, outputStr, 0);
-
-ck_assert_str_eq("0.5609747685", outputStr);
 
 // TESTX19
 
@@ -697,3 +675,25 @@ ReplaceX(expression, x);
 TestCalculate(expression, outputStr, 0);
 
 ck_assert_str_eq("Invalid symbols encountered",outputStr);
+
+// TEST2
+
+#test calc2
+
+char expression[MAX_STRING_SIZE] = "-(+5-(+6-(-7-(-1-(+3+4+-54343.43434*-6+-3/-4++5++7)))))"; 
+char outputStr[MAX_STRING_SIZE] = {0}; 
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_ldouble_eq_tol(strtold("-326073.35604",NULL), strtold(outputStr,NULL), EPS);
+
+// TESTX17
+
+#test calcx17
+
+char expression[MAX_STRING_SIZE] = "cos(acos(tan(atan(sin(sqrt(x^sqrt(sqrt((5)*(+5%4)))))))))";
+char x[MAX_STRING_SIZE] = "0.5";
+char outputStr[MAX_STRING_SIZE] = {0};
+ReplaceX(expression, x);
+TestCalculate(expression, outputStr, 0);
+
+ck_assert_str_eq("0.5609747685", outputStr);

@@ -45,7 +45,7 @@ void Calculate(view_to_calc_struct view_to_calc,
 void CalculatorOutput(char *expression, char *output_answer,
                       enum calc_Err calc_error);
 
-void unfoldHelper(long double (*f)(long double), char *left, char *middle,
+void UnfoldHelper(long double (*f)(long double), char *left, char *middle,
                   char *right, char *inputStr, int howManyLetters,
                   enum calc_Err *err);
 bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool dir,
@@ -77,11 +77,11 @@ bool IsJustANumber(char *inputStr);
 bool MultidotError(const char *input_str);
 void AddOuterBrackets(char *inputStr);
 bool DoesHaveBrackets(char *inputStr);
-enum calc_Oper checkLeftBracketOper(char *left_str, int left_bracket_idx);
+enum calc_Oper CheckLeftBracketOper(char *left_str, int left_bracket_idx);
 void strBracketDeletion(char *inputStr, int start, int end);
 void DeleteBrackets(char *left, char *right);
 void wholeStrBracketDeletion(char *inputStr, int start, int end);
-enum calc_Err unfoldBrackets(char *inputStr, int startIn, int endIn);
+enum calc_Err UnfoldBrackets(char *inputStr, int startIn, int endIn);
 long double GetLeftOrRightDigits(char *inputMid, int operatorPos,
                                  int *digitsEnd, bool isLeft);
 long double RNum(char *inputMid, int operatorPos, int *digitsEnd);
