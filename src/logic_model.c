@@ -2,43 +2,26 @@
 
 #include "vaslib.h"
 
-// TODO: DOUBLE DOT
-const int calc_kUninit = -68;
 #define CALC_STR_(X) #X
 #define CALC_STR(X) CALC_STR_(X)
 #define CALC_SPRINTF_PRECISION 10
 
-enum calc_Oper {
-  calc_Oper_kNone = 0,
-  calc_Oper_kMinus,
-  calc_Oper_kAcos,
-  calc_Oper_kAsin,
-  calc_Oper_kAtan,
-  calc_Oper_kSqrt,
-  calc_Oper_kCos,
-  calc_Oper_kSin,
-  calc_Oper_kTan,
-  calc_Oper_kLog,
-  calc_Oper_kLn,
-  calc_Oper_kError
-};
+const int calc_kUninit = -68;
+const int calc_kMaxSolverLoops = 5000;
+const long double calc_kInfinity =
+    999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0L;
+const long double calc_kSolverMidDefault = 0.0000001;
 
-const char *acos_str = "acos";
-const char *asin_str = "asin";
-const char *atan_str = "atan";
-const char *sqrt_str = "sqrt";
-const char *cos_str = "cos";
-const char *sin_str = "sin";
-const char *tan_str = "tan";
-const char *log_str = "log";
-const char *ln_str = "ln";
-const char *m_str = "_";
+char *acos_str = "acos", *asin_str = "asin", *atan_str = "atan",
+     *sqrt_str = "sqrt", *cos_str = "cos", *sin_str = "sin", *tan_str = "tan",
+     *log_str = "log", *ln_str = "ln", *m_str = "_";
 
-void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
+void CalcErrorMessage(enum CalcErr error_enum, char *error_message) {
   const char *DivisionByZero_message = "Division by zero is impossible";
   const char *Nan_message = "NAN encountered during calculation";
   const char *BracketsAreInvaild_message = "Brackets are invalid";
   const char *InvalidSymbols_message = "Invalid symbols encountered";
+  const char *SolverTimeout_message = "Solver timeout reached";
   if (error_enum == calc_Err_kDivisionByZero) {
     strcpy(error_message, DivisionByZero_message);
   } else if (error_enum == calc_Err_kNan) {
@@ -47,69 +30,10 @@ void CalcErrorMessage(enum calc_Err error_enum, char *error_message) {
     strcpy(error_message, BracketsAreInvaild_message);
   } else if (error_enum == calc_Err_kInvalidSymbols) {
     strcpy(error_message, InvalidSymbols_message);
+  } else if (error_enum == calc_Err_kSolverTimeout) {
+    strcpy(error_message, SolverTimeout_message);
   }
 }
-
-// Binary search solver:
-// bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool
-// dir,
-//                         char *possibleAnswer) {
-//   long double expectedAnswer = 0.0L;
-//   expectedAnswer = strtold(expectedAnswerStr, NULL);
-//   char localExpression[MAX_STRING_SIZE] = {0};
-//   long double answerNum = 0.0L;
-//   char answerStr[MAX_STRING_SIZE] = {0};
-//   long double top = (long double)(DBL_MAX - 1.0L) / 2.0L;
-//   long double mid = 0.53534534;
-//   long double bot = (long double)(-DBL_MAX + 1.0L) / 2.0L;
-//   char midStr[MAX_STRING_SIZE] = {0};
-//   long counter = 0;
-//   bool returnValue = false;
-//   bool whileBreakInvalidInput = false;
-//   do {
-//     strcpy(localExpression, expression);
-//     sprintfHelper(midStr, mid);
-//     replaceX(localExpression, midStr);
-//     Calculate(localExpression, answerStr, 0);
-//     if (strcmp(answerStr, MES_OPER_PASS_BRACKETS_COUNT_INVALID) != 0 &&
-//         strcmp(answerStr, MES_OPER_PASS_INVALID_SYMBOLS) != 0 &&
-//         strcmp(answerStr, MES_OPER_PASS_TIMEOUT) != 0) {
-//       answerNum = strtold(answerStr, NULL);
-//       counter++;
-//       if (dir == 0) {
-//         if (answerNum < expectedAnswer) {
-//           bot = mid;
-//           mid = (long double)(top + mid) / 2.0L;
-//         }
-//         if (answerNum > expectedAnswer) {
-//           top = mid;
-//           mid = (long double)(bot + mid) / 2.0L;
-//         }
-//       } else if (dir == 1) {
-//         if (answerNum > expectedAnswer) {
-//           bot = mid;
-//           mid = (long double)(top + mid) / 2.0L;
-//         }
-//         if (answerNum < expectedAnswer) {
-//           top = mid;
-//           mid = (long double)(bot + mid) / 2.0L;
-//         }
-//       }
-//       UnlockCalculate();
-//     } else {
-//       whileBreakInvalidInput = true;
-//     }
-//   } while (fabsl(answerNum - expectedAnswer) > 0.0000001 &&
-//            counter < MAX_SOLVER_LOOPS && whileBreakInvalidInput == false);
-//   if (counter < MAX_SOLVER_LOOPS && whileBreakInvalidInput == false) {
-//     // sprintf(possibleAnswer, "%.6f", (double)mid);  // WIN
-//     sprintf(possibleAnswer, "%.6Lf", mid);  // MAC
-//     cleanUpTrailingZeroes(possibleAnswer);
-//     returnValue = true;
-//   }
-//   UnlockCalculate();
-//   return returnValue;
-// }
 
 void SplitInHalf(char *input_str, char *left, char *right, int split_pos) {
   if (split_pos > -1 && split_pos < (int)strlen(input_str)) {
@@ -145,7 +69,7 @@ void UnlockCalculate() {
   Calculate(view_to_calc, calc_to_view);
 }
 
-void TestCalculate(char *input, char *output, int dummy) {
+void TestCalculate(char *input, char *output) {
   calc_to_view_struct calc_to_view;
   view_to_calc_struct view_to_calc;
   view_to_calc.calc_input = (char *)calloc(calc_kMaxStrSize, sizeof(char));
@@ -162,8 +86,7 @@ void TestCalculate(char *input, char *output, int dummy) {
 
 bool ContainsInvalidCharacters(const char *input_str) {
   const char *kAllowedCharacters =
-      "0123456789 +-*/% . ( ) cos sin tan acos asin atan sqrt ln log ^ e mod "
-      "~";
+      "0123456789 +-*/% .~ ( ) cos sin tan acos asin atan sqrt ln log ^ e mod ";
   bool it_does = false;
   for (int i = 0; input_str[i] != '\0'; ++i) {
     if (VasCharMatch(input_str[i], kAllowedCharacters) == 0) {
@@ -216,8 +139,8 @@ bool MultidotError(const char *input_str) {
   return double_dot_found;
 }
 
-enum calc_Err Validation(const char *expression) {
-  enum calc_Err expression_error = calc_Err_kOk;
+enum CalcErr Validation(const char *expression) {
+  enum CalcErr expression_error = calc_Err_kOk;
   if (!AreBracketsValid(expression)) {
     expression_error = calc_Err_kBracketsAreInvaild;
   }
@@ -233,6 +156,7 @@ enum calc_Err Validation(const char *expression) {
 void Calculate(view_to_calc_struct view_to_calc,
                calc_to_view_struct calc_to_view) {
   static bool locked = false;
+  int with_output = CALC_WITH_OUTPUT;
   if (view_to_calc.unlock == true) locked = false;
   if (view_to_calc.unlock == false && locked == false) {
     locked = true;
@@ -241,15 +165,15 @@ void Calculate(view_to_calc_struct view_to_calc,
     }
     char expression[calc_kMaxStrSize] = {0};
     strcpy(expression, view_to_calc.calc_input);
-    enum calc_Err expression_error = Validation(expression);
+    enum CalcErr expression_error = Validation(expression);
     if (!expression_error) {
-      TransformUnariesModAndSpaces(expression);
+      TransformUnariesModSpaces(expression);
       AddMultSigns(expression);
       AddOuterBrackets(expression);
       int start = calc_kUninit, end = calc_kUninit, missing_brackets = 0;
       bool calc_finished = false;
       while (!missing_brackets && !calc_finished && !expression_error) {
-        printf("%s\n", expression);
+        if (with_output) printf("%s\n", expression);
         char prev_expression[calc_kMaxStrSize] = {0};
         strcpy(prev_expression, expression);
         char left[calc_kMaxStrSize] = {0}, middle[calc_kMaxStrSize] = {0},
@@ -263,8 +187,6 @@ void Calculate(view_to_calc_struct view_to_calc,
         missing_brackets = FindDeepestBrackets(expression, &start, &end);
         expression_error = UnfoldBrackets(expression, start, end);
         if (!DoesHaveBrackets(expression) && !IsJustANumber(expression)) {
-          TransformUnariesModAndSpaces(expression);
-          AddMultSigns(expression);
           AddOuterBrackets(expression);
         } else if (!DoesHaveBrackets(expression)) {
           calc_finished = true;
@@ -277,7 +199,8 @@ void Calculate(view_to_calc_struct view_to_calc,
 }
 
 void CalculatorOutput(char *expression, char *output_answer,
-                      enum calc_Err calc_error) {
+                      enum CalcErr calc_error) {
+  int with_output = CALC_WITH_OUTPUT;
   if (expression[0] == '~') expression[0] = '-';
   if (calc_error != calc_Err_kOk) {
     CalcErrorMessage(calc_error, output_answer);
@@ -286,9 +209,9 @@ void CalculatorOutput(char *expression, char *output_answer,
     CalcErrorMessage(calc_error, output_answer);
   } else {
     long double final_result = strtold(expression, NULL);
-    if (final_result > INFI) {
+    if (final_result > calc_kInfinity) {
       strcpy(output_answer, "inf");
-    } else if (final_result < (INFI * -1)) {
+    } else if (final_result < (calc_kInfinity * -1)) {
       strcpy(output_answer, "-inf");
     } else {
       SprintfHelper(output_answer, final_result);
@@ -296,7 +219,7 @@ void CalculatorOutput(char *expression, char *output_answer,
       VasCleanUpTrailingZeroes(output_answer);
     }
   }
-  printf("\nFINAL ANSWER: %s\n\n", output_answer);
+  if (with_output) printf("\nFINAL ANSWER: %s\n\n", output_answer);
 };
 
 void AddOuterBrackets(char *input_str) {
@@ -353,113 +276,73 @@ int FindDeepestBrackets(char *input_str, int *start_in, int *end_in) {
   return has_error;
 }
 
-enum calc_Err UnfoldBrackets(char *input_str, int start_in, int end_in) {
-  // Checking unfold logic:
-  // enum calc_Oper left_bracket_oper = calc_Oper_kNone;
-  // int i = start_in;  // left bracket index
-  // char temp_str[5] = {0};
-  // VasClearCharArray(temp_str, 5);
-  // for (int j = 1; j <= 4; ++j) {
-  //   if (input_str[i - j] > -1) temp_str[j - 1] = input_str[i - j];
-  // }
-  // VasReverseCharArray(temp_str);
-  // Checking unfold logic END
-
-  // Main unfold Params and Logic:
-  enum calc_Oper oper = CheckLeftBracketOper(input_str, start_in);
+enum CalcErr UnfoldBrackets(char *input_str, int start_in, int end_in) {
+  int i = start_in;  // left bracket index
+  char left_chunk[5] = {0};
+  for (int j = 1; j <= 4; ++j) {
+    if (input_str[i - j] > -1) left_chunk[j - 1] = input_str[i - j];
+  }
+  VasReverseCharArray(left_chunk);
   char left[calc_kMaxStrSize] = {0}, mid[calc_kMaxStrSize] = {0},
        right[calc_kMaxStrSize] = {0}, temp_str[calc_kMaxStrSize] = {0};
-  enum calc_Err err = calc_Err_kOk;
+  enum CalcErr err = calc_Err_kOk;
   ThreeWaySplit(input_str, left, mid, right, start_in, end_in);
-  // Main unfold Params and Logic END
-  if (oper == calc_Oper_kMinus) {
+  if (strstr(left_chunk, acos_str)) {
+    err = UnfoldHelper(acosl, left, mid, right, input_str, acos_str);
+  } else if (strstr(left_chunk, asin_str)) {
+    err = UnfoldHelper(asinl, left, mid, right, input_str, asin_str);
+  } else if (strstr(left_chunk, atan_str)) {
+    err = UnfoldHelper(atanl, left, mid, right, input_str, atan_str);
+  } else if (strstr(left_chunk, sqrt_str)) {
+    if (mid[0] == '-' || mid[0] == '~') {  // negative sqrt is a complex number
+      err = calc_Err_kNan;
+    } else {
+      err = UnfoldHelper(sqrtl, left, mid, right, input_str, sqrt_str);
+    }
+  } else if (strstr(left_chunk, cos_str)) {
+    err = UnfoldHelper(cosl, left, mid, right, input_str, cos_str);
+  } else if (strstr(left_chunk, sin_str)) {
+    err = UnfoldHelper(sinl, left, mid, right, input_str, sin_str);
+  } else if (strstr(left_chunk, tan_str)) {
+    err = UnfoldHelper(tanl, left, mid, right, input_str, tan_str);
+  } else if (strstr(left_chunk, log_str)) {
+    err = UnfoldHelper(log10l, left, mid, right, input_str, log_str);
+  } else if (left_chunk[strlen(left_chunk) - 1] == 'n' &&
+             left_chunk[strlen(left_chunk) - 2] == 'l') {
+    err = UnfoldHelper(logl, left, mid, right, input_str, ln_str);
+  } else if (strlen(left_chunk) && left_chunk[strlen(left_chunk) - 1] == '_') {
     if (mid[0] == '~') {
       mid[0] = '+';
     } else if (mid[0] != '~') {
-      strcat(temp_str, "-");
+      strcpy(temp_str, "-");
       strcat(temp_str, mid);
       strcpy(mid, temp_str);
     }
     DeleteBrackets(left, right);
     left[strlen(left) - 1] = '\0';
     Recombine(input_str, left, mid, right);
-  } else if (oper == calc_Oper_kAcos) {
-    UnfoldHelper(acosl, left, mid, right, input_str, 4, &err);
-  } else if (oper == calc_Oper_kAsin) {
-    UnfoldHelper(asinl, left, mid, right, input_str, 4, &err);
-  } else if (oper == calc_Oper_kAtan) {
-    UnfoldHelper(atanl, left, mid, right, input_str, 4, &err);
-  } else if (oper == calc_Oper_kSqrt) {
-    if (mid[0] == '-' || mid[0] == '~') {  // negative sqrt is a complex number
-      err = calc_Err_kNan;
-    } else {
-      UnfoldHelper(sqrtl, left, mid, right, input_str, 4, &err);
-    }
-  } else if (oper == calc_Oper_kCos) {
-    UnfoldHelper(cosl, left, mid, right, input_str, 3, &err);
-  } else if (oper == calc_Oper_kSin) {
-    UnfoldHelper(sinl, left, mid, right, input_str, 3, &err);
-  } else if (oper == calc_Oper_kTan) {
-    UnfoldHelper(tanl, left, mid, right, input_str, 3, &err);
-  } else if (oper == calc_Oper_kLog) {
-    UnfoldHelper(log10l, left, mid, right, input_str, 3, &err);
-  } else if (oper == calc_Oper_kLn) {
-    UnfoldHelper(logl, left, mid, right, input_str, 2, &err);
-  } else if (oper == calc_Oper_kError) {
+  } else if (strlen(left_chunk) &&
+             !VasCharMatch(left_chunk[strlen(left_chunk) - 1], "^+*/%(")) {
     err = calc_Err_kInvalidSymbols;
-  } else if (oper == calc_Oper_kNone) {
+  } else {  // just brackets
     DeleteBrackets(left, right);
     Recombine(input_str, left, mid, right);
   }
   return err;
 }
 
-void UnfoldHelper(long double (*fun)(long double), char *left, char *middle,
-                  char *right, char *input_str, int how_many_letters,
-                  enum calc_Err *err) {
+enum CalcErr UnfoldHelper(long double (*fun)(long double), char *left,
+                          char *middle, char *right, char *input_str,
+                          char *oper_str) {
+  enum CalcErr err = calc_Err_kOk;
   SprintfHelper(middle, fun(strtold(middle, NULL)));
   if (strstr("nan", middle) || strstr("NaN", middle) || strstr("NAN", middle)) {
-    *err = calc_Err_kNan;
+    err = calc_Err_kNan;
   }
   DeleteBrackets(left, right);
-  left[strlen(left) - how_many_letters] = '\0';
+  left[strlen(left) - strlen(oper_str)] = '\0';
   Recombine(input_str, left, middle, right);
-}
-
-enum calc_Oper CheckLeftBracketOper(char *left_str, int left_bracket_idx) {
-  enum calc_Oper left_bracket_oper = calc_Oper_kNone;
-  int i = left_bracket_idx;
-  char temp_str[5] = {0};
-  VasClearCharArray(temp_str, 5);
-  for (int j = 1; j <= 4; ++j) {
-    if (left_str[i - j] > -1) temp_str[j - 1] = left_str[i - j];
-  }
-  VasReverseCharArray(temp_str);
-  if (strstr(temp_str, acos_str)) {
-    left_bracket_oper = calc_Oper_kAcos;
-  } else if (strstr(temp_str, asin_str)) {
-    left_bracket_oper = calc_Oper_kAsin;
-  } else if (strstr(temp_str, atan_str)) {
-    left_bracket_oper = calc_Oper_kAtan;
-  } else if (strstr(temp_str, sqrt_str)) {
-    left_bracket_oper = calc_Oper_kSqrt;
-  } else if (strstr(temp_str, cos_str)) {
-    left_bracket_oper = calc_Oper_kCos;
-  } else if (strstr(temp_str, sin_str)) {
-    left_bracket_oper = calc_Oper_kSin;
-  } else if (strstr(temp_str, tan_str)) {
-    left_bracket_oper = calc_Oper_kTan;
-  } else if (strstr(temp_str, log_str)) {
-    left_bracket_oper = calc_Oper_kLog;
-  } else if (strstr(temp_str, ln_str)) {
-    left_bracket_oper = calc_Oper_kLn;
-  } else if (strstr(temp_str, m_str)) {
-    left_bracket_oper = calc_Oper_kMinus;
-  } else if (strlen(temp_str) &&
-             !VasCharMatch(temp_str[strlen(temp_str) - 1], "^+*/%(")) {
-    left_bracket_oper = calc_Oper_kError;
-  }
-  return left_bracket_oper;
+  return err;
 }
 
 void DeleteBrackets(char *left, char *right) {
@@ -471,7 +354,7 @@ void DeleteBrackets(char *left, char *right) {
   }
 }
 
-void TransformUnariesModAndSpaces(char *input) {
+void TransformUnariesModSpaces(char *input) {
   char before[calc_kMaxStrSize] = {0};
   do {
     strcpy(before, input);
@@ -537,7 +420,7 @@ long double RNum(char *input_mid, int oper_pos, int *digits_end) {
 
 long double GetLeftOrRightDigits(char *input, int oper_position,
                                  int *digits_end, bool is_left) {
-  char *to_match = "0123456789~. inf nan NAN";
+  char *to_match = "0123456789~. inf nan NAN e";
   char final_number[calc_kMaxStrSize] = {0};
   int i = 0;
   if (is_left) i = oper_position - 1;
@@ -562,8 +445,8 @@ long double GetLeftOrRightDigits(char *input, int oper_position,
 
 int OperCount(char *input) { return VasCountOfChars(input, "^/*%-+"); }
 
-enum calc_Err ParseAndApplyOperators(char *mid_inp) {
-  enum calc_Err err = calc_Err_kOk;
+enum CalcErr ParseAndApplyOperators(char *mid_inp) {
+  enum CalcErr err = calc_Err_kOk;
   bool loop_break = false;
   while (1) {
     if (err = OperatorPassLoop(mid_inp, "^")) break;
@@ -578,8 +461,8 @@ enum calc_Err ParseAndApplyOperators(char *mid_inp) {
   return err;
 }
 
-enum calc_Err OperatorPassLoop(char *input_mid, char *op_char) {
-  enum calc_Err err = calc_Err_kOk;
+enum CalcErr OperatorPassLoop(char *input_mid, char *op_char) {
+  enum CalcErr err = calc_Err_kOk;
   bool loop_break = false;
   while (VasCountOfChars(input_mid, op_char) > 0 && loop_break == false) {
     if (err = OperatorPass(input_mid, op_char)) loop_break = true;
@@ -587,8 +470,8 @@ enum calc_Err OperatorPassLoop(char *input_mid, char *op_char) {
   return err;
 }
 
-enum calc_Err OperatorPass(char *input, char *op_char) {
-  enum calc_Err err = calc_Err_kOk;
+enum CalcErr OperatorPass(char *input, char *op_char) {
+  enum CalcErr err = calc_Err_kOk;
   int i = 0, res_start = calc_kUninit, res_end = calc_kUninit;
   long double result = 0.0L;
   char char_array_result[calc_kMaxStrSize] = {0};
@@ -650,7 +533,8 @@ void ThreeWaySplit(char *input, char *left, char *middle, char *right,
 }
 
 bool IsJustANumber(char *input_str) {
-  char to_match[calc_kMaxStrSize] = "0123456789. inf NAN nan";
+  char to_match[calc_kMaxStrSize] =
+      "0123456789. inf NAN nan e";  // Minus is not checked
   int i = 0;
   bool is_num = true;
   if (strlen(input_str) == 0) is_num = false;
@@ -662,94 +546,61 @@ bool IsJustANumber(char *input_str) {
   return is_num;
 }
 
-// FOR DEBUGGING:
-// --------------
-
-// void sravnenieSC() {
-//   long double aboba = 0.0L;
-//   aboba = sqrt(-100);
-//   // printf("%.10f", (double)aboba);  // WIN
-//   printf("%.10Lf", aboba);  // MAG
-// }
-
-// void printHelper(char *inputStr) {
-//   char tempStr[MAX_STRING_SIZE] = {0};
-//   strcpy(tempStr, inputStr);
-//   cleanUpTrailingZeroes(tempStr);
-//   printf("[%s]\n", tempStr);
-// }
-
-// UNUSED:
-// -------
-
-// void strBracketDeletion(char *inputStr, int start, int end) {
-//   char tempStr[MAX_STRING_SIZE] = {0};
-//   if (start > -1) {
-//     strncat(tempStr, inputStr, start);
-//   }
-//   strncat(tempStr, inputStr + start + 1, end - start - 1);
-//   if (end < (int)strlen(inputStr)) {
-//     strcat(tempStr, inputStr + start + (end - start) + 1);
-//   }
-//   strcpy(inputStr, tempStr);
-// }
-
-// enum calc_kAreBracketsValid {
-//   calc_kBracketsValid = 0,
-//   calc_kBracketsInvalid,
-//   calc_kNoBrackets,
-// };
-
-// void TransformUnariesAndMod(char *input) {
-//   char before[calc_kMaxStringSize] = {0};
-//   do {
-//     strcpy(before, input);
-//     if (input[0] == '+' && strlen(input) > 0) input[0] = ' ';
-//     if (strlen(input) >= 2 && input[0] == '-') {
-//       if (input[1] == '-') {
-//         input[0] = ' ';
-//         input[1] = ' ';
-//       } else if (input[1] == '(') {
-//         input[0] = '_';
-//       } else {
-//         input[0] = '~';
-//       }
-//     }
-//     const char *map_pair[][2] = {
-//         {"++", "+ "}, {"-+", "- "}, {"-+", "- "},       {"(-", "(~"},
-//         {"(+", "( "}, {"/+", "/ "}, {"/+", "/ "},       {"*+", "* "},
-//         {"/-", "/~"}, {"*-", "*~"}, {"^+", "^ "},       {"^-", "^~"},
-//         {"%+", "% "}, {"%-", "%~"}, {"+-", "+~"},       {"+-", "+~"},
-//         {"-~", " +"}, {"~-", "~~"}, /*?*/ {"--", " +"},
-//     };
-//     const char *map_tri[][3] = {
-//         {"(-(", "(_("},
-//         {"mod", "  %"},
-//     };
-//     char temp_str[4] = {0};
-//     for (int i = 0; i <= strlen(input) && strlen(input) >= 2; ++i) {
-//       temp_str[0] = input[i];
-//       temp_str[1] = input[i + 1];
-//       for (int j = 0; j < sizeof(map_pair) / sizeof(map_pair[0]); ++j) {
-//         if (strcmp(temp_str, map_pair[i][0]) == 0) {
-//           input[i] = map_pair[j][1][0];
-//           input[i + 1] = map_pair[j][1][1];
-//         }
-//       }
-//       temp_str[2] = input[i + 2];
-//       for (int j = 0; j < sizeof(map_tri) / sizeof(map_tri[0]); ++j) {
-//         if (strcmp(temp_str, map_tri[i][0]) == 0) {
-//           input[i] = map_tri[j][1][0];
-//           input[i + 1] = map_tri[j][1][1];
-//           input[i + 2] = map_tri[j][1][2];
-//         }
-//       }
-//       strcpy(temp_str, "");
-//     }
-//     VasCleanUpSpaces(input);
-//   } while (strcmp(input, before) != 0);
-// }
-
-// TODO another function, but for * between and after/before brackets
-
-// printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
+void BinarySearchSolver(view_to_calc_struct view_to_calc,
+                        calc_to_view_struct calc_to_view) {
+  long double calc_kSolverMidDiv = powl(10.0L, 50.0L);
+  long double expected_answer = strtold(view_to_calc.solver_variable, NULL),
+              answer_num = 0.0L;
+  char local_expression[calc_kMaxStrSize] = {0},
+       answer_str[calc_kMaxStrSize] = {0}, mid_str[calc_kMaxStrSize] = {0};
+  long double top = (long double)(calc_kInfinity - 2.0L) / calc_kSolverMidDiv,
+              mid = calc_kSolverMidDefault,
+              bot = (long double)(-calc_kInfinity + 2.0L) / calc_kSolverMidDiv;
+  int counter = 0, direction = 0;
+  bool invalid_input = false;
+  strcpy(local_expression, view_to_calc.calc_input);
+  enum CalcErr expression_error = calc_Err_kOk;
+  do {
+    ++counter;
+    strcpy(local_expression, view_to_calc.calc_input);
+    SprintfHelper(mid_str, mid);
+    ReplaceX(local_expression, mid_str);
+    expression_error = Validation(local_expression);
+    if (!expression_error) {
+      TestCalculate(local_expression, answer_str);
+      expression_error = Validation(answer_str);
+      if (!expression_error) {
+        answer_num = strtold(answer_str, NULL);
+        if (!direction) {
+          if (answer_num < expected_answer) {
+            bot = mid;
+            mid = (long double)(top + mid) / 2.0L;
+          } else if (answer_num > expected_answer) {
+            top = mid;
+            mid = (long double)(bot + mid) / 2.0L;
+          }
+        } else if (direction) {
+          if (answer_num > expected_answer) {
+            bot = mid;
+            mid = (long double)(top + mid) / 2.0L;
+          } else if (answer_num < expected_answer) {
+            top = mid;
+            mid = (long double)(bot + mid) / 2.0L;
+          }
+        }
+        if (counter == calc_kMaxSolverLoops / 2 && !direction) {
+          direction = 1;
+          top = (long double)(calc_kInfinity - 2.0L) / calc_kSolverMidDiv,
+          mid = -calc_kSolverMidDefault,
+          bot = (long double)(-calc_kInfinity + 2.0L) / calc_kSolverMidDiv;
+        }
+      }
+    }
+  } while (fabsl(answer_num - expected_answer) > 0.00000009 &&
+           counter < calc_kMaxSolverLoops);
+  if (counter >= calc_kMaxSolverLoops) {
+    expression_error = calc_Err_kSolverTimeout;
+  }
+  sprintf(mid_str, "%.6Lf", mid);
+  CalculatorOutput(mid_str, calc_to_view.answer, expression_error);
+}

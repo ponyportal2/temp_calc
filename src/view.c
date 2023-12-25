@@ -13,7 +13,6 @@
 #define CALC_MEME 0
 #endif  // CALC_MEME
 
-// ёбля волшебных существ:
 const long long int calc_kViewGraphUninit =
     -1527219354888013218690209950634698640695279350620336683.0;
 const int calc_kViewGraphDotsCount = 20000;
@@ -25,25 +24,24 @@ const char* calc_kXBoxDefaultText =
 const char* calc_kInputBoxDefaultText =
     "Write your expression here, OPTION(Alt) + BACKSPACE to clear this field,"
     "use LEFT ARROW key to delete whole words or numbers";
-
 const char* calc_kSolverDefaultText =
     "Write expected answer for the solver here, \\ + BACKSPACE to clear this "
     "field";
 const char* calc_kOutputDefaultText = "Output will be here";
 
-typedef struct pixel_t {
+typedef struct calc_pixel_t {
   unsigned char r;
   unsigned char g;
   unsigned char b;
-} pixel;
+} calc_pixel;
 
 int main() {
+  srand(time(NULL));
   InitWindow(calc_kScreenWidth, calc_kScreenHeight, "SmartCalc");
   SetExitKey(0);
   bool exit_window = false;
   bool show_message_box = false;
   bool meme_mode = CALC_MEME;
-  srand(time(NULL));
   calc_dot graph_dots[calc_kViewGraphDotsCount];
   ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   Color background_color_value = CLITERAL(Color){33, 33, 33, 33};
@@ -54,10 +52,10 @@ int main() {
   GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
   InitAudioDevice();
   Sound fx_wav = LoadSound("a.wav");
-  char input_box_text[calc_kMaxStrSize] = {0};
-  char x_box_text[calc_kMaxStrSize] = {0};
-  char solver_box_text[calc_kMaxStrSize] = {0};
-  char output_box_text[calc_kMaxStrSize] = {0};
+  char input_box_text[calc_kMaxStrSize] = {0},
+       x_box_text[calc_kMaxStrSize] = {0},
+       solver_box_text[calc_kMaxStrSize] = {0},
+       output_box_text[calc_kMaxStrSize] = {0};
   // Copying default text to text fields
   strcpy(input_box_text, calc_kInputBoxDefaultText);
   strcpy(x_box_text, calc_kXBoxDefaultText);
@@ -70,7 +68,6 @@ int main() {
 
   // MAIN LOOP:
   while (!exit_window) {  // Will detect window close button or ESC
-
     if (quake_counter > 0) {
       q = rand() % 40 - 20;
       quake_counter--;
@@ -132,7 +129,8 @@ int main() {
     // Clear button:
     if (GuiButton(
             (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - margin) + q,
-                        calc_kScreenHeight - margin * 6 + q, margin, margin},
+                        calc_kScreenHeight - margin * 5.25 + q, margin * 2,
+                        margin},
             "Clear")) {
       strcpy(input_box_text, "\0");
       strcpy(x_box_text, "\0");
@@ -160,12 +158,8 @@ int main() {
     if (GuiButton(
             (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - (margin)) + q,
                         calc_kScreenHeight - margin * 4 + q, margin, margin},
-            "=")) {
-      EqualsPressed(input_box_text, x_box_text, solver_box_text,
-                    output_box_text, &quake_counter, meme_mode, fx_wav,
-                    graph_dots);
-    }
-    if (IsKeyPressed(KEY_ENTER)) {
+            "=") ||
+        IsKeyPressed(KEY_ENTER)) {
       EqualsPressed(input_box_text, x_box_text, solver_box_text,
                     output_box_text, &quake_counter, meme_mode, fx_wav,
                     graph_dots);
@@ -175,14 +169,14 @@ int main() {
         (Rectangle){0, calc_kScreenHeight - margin, calc_kScreenWidth, margin},
         "SmartCalc");
     // Draw whole graph:
-    for (int i = 0; i < calc_kViewGraphDotsCount; i++) {
+    for (int i = 0; i < calc_kViewGraphDotsCount; ++i) {
       if (graph_dots[i].x != calc_kViewGraphUninit) {
         DrawPixel(
             (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
             (long double)calc_kScreenHeight / 2 - 30 -
                 (graph_dots[i].y * 0.00015),
             RED);
-        i++;
+        ++i;
       }
     }
     // Exit logic:
@@ -211,40 +205,45 @@ int main() {
 void EqualsPressed(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
                    int meme_mode, Sound input_sound, calc_dot* graph_dots) {
-  bool x_input_error = 0;
   char result_text[calc_kMaxStrSize] = {0};
   ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
-  if (strcmp(x_box_text, calc_kXBoxDefaultText) != 0 &&
-      strlen(x_box_text) > 0 && strpbrk(input_box_text, "Xx") &&
-      !strpbrk(x_box_text, "Xx")) {
+  view_to_calc.calculation_type = calc_kNoCalculation;
+  view_to_calc.calc_input = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+  view_to_calc.x_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+  view_to_calc.solver_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+  calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+  if (strcmp(x_box_text, calc_kXBoxDefaultText) != 0 && strlen(x_box_text) &&
+      strpbrk(input_box_text, "Xx") && !strpbrk(x_box_text, "Xx")) {
     view_to_calc.calculation_type = calc_kCalculateWithX;
-    printf("\nb\n");
   } else if (strcmp(solver_box_text, calc_kSolverDefaultText) != 0 &&
-             strlen(solver_box_text) > 0 && strpbrk(input_box_text, "Xx")) {
+             strlen(solver_box_text) && strpbrk(input_box_text, "Xx")) {
     view_to_calc.calculation_type = calc_kSolve;
   } else if (strcmp(input_box_text, calc_kInputBoxDefaultText) != 0 &&
-             strlen(input_box_text) > 0) {
+             strlen(input_box_text)) {
     view_to_calc.calculation_type = calc_kCalculate;
   }
   if (view_to_calc.calculation_type == calc_kCalculate) {
-    view_to_calc.calc_input = (char*)calloc(calc_kMaxStrSize, sizeof(char));
-    calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
     strcpy(view_to_calc.calc_input, input_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_text, calc_to_view.answer);
   } else if (view_to_calc.calculation_type == calc_kCalculateWithX) {
-    view_to_calc.calc_input = (char*)calloc(calc_kMaxStrSize, sizeof(char));
-    calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
-    view_to_calc.x_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
     strcpy(view_to_calc.calc_input, input_box_text);
     strcpy(view_to_calc.x_variable, x_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_text, calc_to_view.answer);
     // ADD GRAPH DRAWING HERE LATER
   } else if (view_to_calc.calculation_type == calc_kSolve) {
-    // TO DO
+    strcpy(view_to_calc.calc_input, input_box_text);
+    strcpy(view_to_calc.solver_variable, solver_box_text);
+    ControllerCommunicate(view_to_calc, calc_to_view);
+    if (!strcmp(calc_to_view.answer, "0.0") ||
+        !strcmp(calc_to_view.answer, "-0.0")) {
+      strcpy(output_text, "0 or Solver Timeout");
+    } else {
+      strcpy(output_text, calc_to_view.answer);
+    }
   }
   SoundAndMemeLogic(CALC_MEME, input_sound, quake_counter);
   if (view_to_calc.calc_input) free(view_to_calc.calc_input);
@@ -258,8 +257,6 @@ void SoundAndMemeLogic(bool meme_mode, Sound input_sound, int* quake_counter) {
   if (meme_mode) {
     input_sound = LoadSound("c.wav");
     *quake_counter = 240;
-  } else if (!meme_mode) {
-    input_sound = LoadSound("a.wav");
   }
   PlaySound(input_sound);
 }
@@ -285,87 +282,8 @@ void DeleteWordFromInput(char* input_str) {
         } else {
           loop_break = true;
         }
-        i--;
+        --i;
       }
     }
   }
 }
-
-// Solver logic:
-
-//   {
-// char possibleAnswer[calc_kMaxStringSize] = {0};
-// if (!binarySearchSolver(input_box_text, solver_box_text, 0,
-//                         possibleAnswer)) {
-//   binarySearchSolver(input_box_text, solver_box_text, 1,
-//                      possibleAnswer);
-// }
-// if (strlen(possibleAnswer) > 0) {
-//   strcpy(resultText,
-//          input_box_text);  // resultText is used as temp here
-//   strcpy(input_box_text, resultText);
-//   strcat(input_box_text, " = ");
-//   strcat(input_box_text, solver_box_text);
-//   strcat(input_box_text, " , Possible x is ");
-//   strcat(input_box_text, possibleAnswer);
-//   soundAndMemeLogic(sound, memeMode, quakeCounter);
-// } else {
-//   strcat(input_box_text,
-//          " No answer found using this method or input is invalid.");
-//   soundAndMemeLogic(sound, memeMode, quakeCounter);
-// }
-
-// Calculate with x and without:
-
-//   char inputBoxTextCpy[calc_kMaxStringSize] = {0};
-//   // NORMAL CALCULATION FIRST:
-//   strcpy(inputBoxTextCpy, input_box_text);
-//   replaceX(inputBoxTextCpy, x_box_text);
-//   calculate(inputBoxTextCpy, resultText, 0);
-//   soundAndMemeLogic(sound, memeMode, quakeCounter);
-//   unlockCalculate();
-//   // GRAPH DRAWING:
-//   int graphDotPositionX = 0;
-//   int graphDotPositionY = 0;
-//   long double tempDoubleInput = -1000000.0L;
-//   char tempDoubleInputStr[calc_kMaxStringSize] = {0};
-//   long double tempGraphOutput = 0.0L;
-//   char tempGraphOutputStr[calc_kMaxStringSize] = {0};
-//   calc_dot graphDotPosition = {0, 0};
-//   int i = 0;
-//   long double step = (long double)2000000.0L / calc_kGraphDotsCount;
-//   while (tempDoubleInput < 1000000.0L) {
-//     tempDoubleInput += step;
-//     strcpy(inputBoxTextCpy, input_box_text);
-//     sprintfHelper(tempDoubleInputStr, tempDoubleInput);
-//     replaceX(inputBoxTextCpy, tempDoubleInputStr);
-//     calculate(inputBoxTextCpy, tempGraphOutputStr, 0);
-//     tempGraphOutput = strtold(tempGraphOutputStr, NULL);
-//     if (tempGraphOutput < 1000000 && tempGraphOutput > -1000000) {
-//       graph_dots[i].x = tempDoubleInput;
-//       graph_dots[i].y = tempGraphOutput;
-//       i++;
-//     };
-//     unlockCalculate();
-//   }
-//   strcpy(output_text, input_box_text);
-//   strcat(output_text, " = ");
-//   strcat(output_text, resultText);
-//   strcpy(input_box_text, output_text);
-// }
-// else if (!strpbrk(input_box_text, "Xx")) {  // NORMAL CALCULATION
-//   calculate(input_box_text, resultText, 0);
-//   strcpy(output_text, input_box_text);
-//   strcat(output_text, " = ");
-//   strcat(output_text, resultText);
-//   strcpy(input_box_text, output_text);
-//   soundAndMemeLogic(sound, memeMode, quakeCounter);
-// }
-// else if (strpbrk(input_box_text, "Xx")) {
-//   strcpy(output_text, input_box_text);
-//   strcat(output_text, " Please enter correct x in the field above");
-//   strcpy(input_box_text, output_text);
-// }
-// }
-// unlockCalculate();
-// }

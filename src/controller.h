@@ -4,7 +4,12 @@
 
 #define calc_kMaxStrSize 16384
 
-enum CalculationType { calc_kSolve = 0, calc_kCalculate, calc_kCalculateWithX };
+enum CalculationType {
+  calc_kNoCalculation = 0,
+  calc_kCalculate,
+  calc_kCalculateWithX,
+  calc_kSolve
+};
 
 typedef struct calc_dot_t {
   long double x;

@@ -13,6 +13,21 @@
 //   return is_num;
 // }
 
+// enum calc_Oper {
+//   calc_Oper_kNone = 0,
+//   calc_Oper_kMinus,
+//   calc_Oper_kAcos,
+//   calc_Oper_kAsin,
+//   calc_Oper_kAtan,
+//   calc_Oper_kSqrt,
+//   calc_Oper_kCos,
+//   calc_Oper_kSin,
+//   calc_Oper_kTan,
+//   calc_Oper_kLog,
+//   calc_Oper_kLn,
+//   calc_Oper_kError
+// };
+
 // ----------
 
 // if (input[i] == op_char) {
@@ -811,3 +826,168 @@
 //               "=")) {
 //   equalsPressed(inputBoxText, outputText, &justCalculated);
 // }
+
+// -----------------------------------------
+// PREVIOUSLY WAS AT THE END OF LOGIC MODEL:
+// -----------------------------------------
+
+// FOR DEBUGGING:
+// --------------
+
+// void sravnenieSC() {
+//   long double aboba = 0.0L;
+//   aboba = sqrt(-100);
+//   // printf("%.10f", (double)aboba);  // WIN
+//   printf("%.10Lf", aboba);  // MAG
+// }
+
+// void printHelper(char *inputStr) {
+//   char tempStr[MAX_STRING_SIZE] = {0};
+//   strcpy(tempStr, inputStr);
+//   cleanUpTrailingZeroes(tempStr);
+//   printf("[%s]\n", tempStr);
+// }
+
+// UNUSED:
+// -------
+
+// void strBracketDeletion(char *inputStr, int start, int end) {
+//   char tempStr[MAX_STRING_SIZE] = {0};
+//   if (start > -1) {
+//     strncat(tempStr, inputStr, start);
+//   }
+//   strncat(tempStr, inputStr + start + 1, end - start - 1);
+//   if (end < (int)strlen(inputStr)) {
+//     strcat(tempStr, inputStr + start + (end - start) + 1);
+//   }
+//   strcpy(inputStr, tempStr);
+// }
+
+// enum calc_kAreBracketsValid {
+//   calc_kBracketsValid = 0,
+//   calc_kBracketsInvalid,
+//   calc_kNoBrackets,
+// };
+
+// void TransformUnariesAndMod(char *input) {
+//   char before[calc_kMaxStringSize] = {0};
+//   do {
+//     strcpy(before, input);
+//     if (input[0] == '+' && strlen(input) > 0) input[0] = ' ';
+//     if (strlen(input) >= 2 && input[0] == '-') {
+//       if (input[1] == '-') {
+//         input[0] = ' ';
+//         input[1] = ' ';
+//       } else if (input[1] == '(') {
+//         input[0] = '_';
+//       } else {
+//         input[0] = '~';
+//       }
+//     }
+//     const char *map_pair[][2] = {
+//         {"++", "+ "}, {"-+", "- "}, {"-+", "- "},       {"(-", "(~"},
+//         {"(+", "( "}, {"/+", "/ "}, {"/+", "/ "},       {"*+", "* "},
+//         {"/-", "/~"}, {"*-", "*~"}, {"^+", "^ "},       {"^-", "^~"},
+//         {"%+", "% "}, {"%-", "%~"}, {"+-", "+~"},       {"+-", "+~"},
+//         {"-~", " +"}, {"~-", "~~"}, /*?*/ {"--", " +"},
+//     };
+//     const char *map_tri[][3] = {
+//         {"(-(", "(_("},
+//         {"mod", "  %"},
+//     };
+//     char temp_str[4] = {0};
+//     for (int i = 0; i <= strlen(input) && strlen(input) >= 2; ++i) {
+//       temp_str[0] = input[i];
+//       temp_str[1] = input[i + 1];
+//       for (int j = 0; j < sizeof(map_pair) / sizeof(map_pair[0]); ++j) {
+//         if (strcmp(temp_str, map_pair[i][0]) == 0) {
+//           input[i] = map_pair[j][1][0];
+//           input[i + 1] = map_pair[j][1][1];
+//         }
+//       }
+//       temp_str[2] = input[i + 2];
+//       for (int j = 0; j < sizeof(map_tri) / sizeof(map_tri[0]); ++j) {
+//         if (strcmp(temp_str, map_tri[i][0]) == 0) {
+//           input[i] = map_tri[j][1][0];
+//           input[i + 1] = map_tri[j][1][1];
+//           input[i + 2] = map_tri[j][1][2];
+//         }
+//       }
+//       strcpy(temp_str, "");
+//     }
+//     VasCleanUpSpaces(input);
+//   } while (strcmp(input, before) != 0);
+// }
+
+// TODO another function, but for * between and after/before brackets
+
+// printf("\nleft:[%s]middle:[%s]right:[%s]\n", left, middle, right);
+
+// ----------------------------------------------------------------
+// BINARY SEARCH SOLVER:
+// ----------------------------------------------------------------
+
+// Binary search solver:
+// bool binarySearchSolver(char *expression, char *expectedAnswerStr, bool
+// dir,
+//                         char *possibleAnswer) {
+//   long double expectedAnswer = 0.0L;
+//   expectedAnswer = strtold(expectedAnswerStr, NULL);
+//   char localExpression[MAX_STRING_SIZE] = {0};
+//   long double answerNum = 0.0L;
+//   char answerStr[MAX_STRING_SIZE] = {0};
+//   long double top = (long double)(DBL_MAX - 1.0L) / 2.0L;
+//   long double mid = 0.53534534;
+//   long double bot = (long double)(-DBL_MAX + 1.0L) / 2.0L;
+//   char midStr[MAX_STRING_SIZE] = {0};
+//   long counter = 0;
+//   bool returnValue = false;
+//   bool whileBreakInvalidInput = false;
+//   do {
+//     strcpy(localExpression, expression);
+//     sprintfHelper(midStr, mid);
+//     replaceX(localExpression, midStr);
+//     Calculate(localExpression, answerStr, 0);
+//     if (strcmp(answerStr, MES_OPER_PASS_BRACKETS_COUNT_INVALID) != 0 &&
+//         strcmp(answerStr, MES_OPER_PASS_INVALID_SYMBOLS) != 0 &&
+//         strcmp(answerStr, MES_OPER_PASS_TIMEOUT) != 0) {
+//       answerNum = strtold(answerStr, NULL);
+//       counter++;
+//       if (dir == 0) {
+//         if (answerNum < expectedAnswer) {
+//           bot = mid;
+//           mid = (long double)(top + mid) / 2.0L;
+//         }
+//         if (answerNum > expectedAnswer) {
+//           top = mid;
+//           mid = (long double)(bot + mid) / 2.0L;
+//         }
+//       } else if (dir == 1) {
+//         if (answerNum > expectedAnswer) {
+//           bot = mid;
+//           mid = (long double)(top + mid) / 2.0L;
+//         }
+//         if (answerNum < expectedAnswer) {
+//           top = mid;
+//           mid = (long double)(bot + mid) / 2.0L;
+//         }
+//       }
+//       UnlockCalculate();
+//     } else {
+//       whileBreakInvalidInput = true;
+//     }
+//   } while (fabsl(answerNum - expectedAnswer) > 0.0000001 &&
+//            counter < MAX_SOLVER_LOOPS && whileBreakInvalidInput == false);
+//   if (counter < MAX_SOLVER_LOOPS && whileBreakInvalidInput == false) {
+//     // sprintf(possibleAnswer, "%.6f", (double)mid);  // WIN
+//     sprintf(possibleAnswer, "%.6Lf", mid);  // MAC
+//     cleanUpTrailingZeroes(possibleAnswer);
+//     returnValue = true;
+//   }
+//   UnlockCalculate();
+//   return returnValue;
+// }
+
+// ----------------------------------------------------------------
+// BINARY SEARCH SOLVER END
+// ----------------------------------------------------------------

@@ -31,11 +31,11 @@ const char* calc_kSolverDefaultText =
     "field";
 const char* calc_kOutputDefaultText = "Output will be here";
 
-typedef struct pixel_t {
+typedef struct calc_pixel_t {
   unsigned char r;
   unsigned char g;
   unsigned char b;
-} pixel;
+} calc_pixel;
 
 int main() {
   InitWindow(calc_kScreenWidth, calc_kScreenHeight, "SmartCalc");

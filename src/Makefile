@@ -22,7 +22,8 @@ SOURCESGCOV=  controller.c logic_model.c vaslib.c test_check.c
 HEADERSGCOV=  controller.h logic_model.h vaslib.h
 MEME_ON=-DCALC_MEME
 MEME_OFF=
-com=
+OUTPUT_ON=-DCALC_WITH_OUTPUT
+OUTPUT_OFF=
 SAN=-fsanitize=address
 # -----------------
 
@@ -36,7 +37,7 @@ push: clean
 build: clean ${SOURCES} ${HEADERS}
 	# -mv c.wav c.doc
 	-mv c.doc c.wav 
-	g++ libraylib_big_sur.a ${SOURCES} -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc ${MEME_OFF} -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
+	g++ -Wall -Wextra libraylib_big_sur.a ${SOURCES} -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc ${OUTPUT_OFF} ${MEME_OFF} -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
 	-mkdir ../build/
 	mv SmartCalc ../build/SmartCalc
 	-cp a.wav c.doc c.wav dark.rgs readme.html a.jpg ../build/
@@ -135,7 +136,7 @@ uitestwin: buildwin
 
 meme:
 	-mv c.doc c.wav
-	g++ ./my_libs/*.c ui.c s21_the_calc.c libraylib.a -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc -DMEME -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
+	g++ ./my_libs/*.c ${SOURCES} libraylib_big_sur.a -framework IOKit -framework Cocoa -framework OpenGL `pkg-config --libs --cflags` -o SmartCalc -DCALC_MEME -DMAC -DGUI_TEXTBOX_EXTENDED_IMPLEMENTATION
 	./SmartCalc
 
 # s21_the_calc.a: clean
