@@ -425,18 +425,20 @@ long double GetLeftOrRightDigits(char *input, int oper_position,
   int i = 0;
   if (is_left) i = oper_position - 1;
   if (!is_left) i = oper_position + 1;
-  bool loop_break = false;
-  while (loop_break == false) {
-    if (input[i] != '~') {
-      char temp_str[2] = {input[i], '\0'};
-      strcat(final_number, temp_str);
-    } else {
-      strcat(final_number, "-");
+  while (1) {
+    if (i > -1 && i < strlen(input)) {
+      if (input[i] != '~') {
+        char temp_str[2] = {input[i], '\0'};
+        strcat(final_number, temp_str);
+      } else {
+        strcat(final_number, "-");
+      }
     }
     if (is_left) --i;
     if (!is_left) ++i;
-    if (i < 0 || i == (int)strlen(input) || input[i] == '\0') loop_break = true;
-    if (VasCharMatch(input[i], to_match) != true) loop_break = true;
+    if (i < 0 || i >= (int)strlen(input)) break;
+    if (input[i] == '\0') break;
+    if (VasCharMatch(input[i], to_match) != true) break;
   }
   *digits_end = i;
   if (is_left) VasReverseCharArray(final_number);
@@ -603,4 +605,8 @@ void BinarySearchSolver(view_to_calc_struct view_to_calc,
   }
   sprintf(mid_str, "%.6Lf", mid);
   CalculatorOutput(mid_str, calc_to_view.answer, expression_error);
+}
+
+void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view) {
+
 }

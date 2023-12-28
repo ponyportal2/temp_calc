@@ -240,7 +240,7 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
     ControllerCommunicate(view_to_calc, calc_to_view);
     if (!strcmp(calc_to_view.answer, "0.0") ||
         !strcmp(calc_to_view.answer, "-0.0")) {
-      strcpy(output_text, "0 or Solver Timeout");
+      strcpy(output_text, "0 or Error");
     } else {
       strcpy(output_text, calc_to_view.answer);
     }
