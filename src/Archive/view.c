@@ -16,7 +16,6 @@
 // ёбля волшебных существ:
 const long long int calc_kViewGraphUninit =
     -1527219354888013218690209950634698640695279350620336683.0;
-const int calc_kViewGraphDotsCount = 20000;
 const int calc_kScreenWidth = 1280;
 const int calc_kScreenHeight = 720;
 
@@ -44,8 +43,8 @@ int main() {
   bool show_message_box = false;
   bool meme_mode = CALC_MEME;
   srand(time(NULL));
-  calc_dot graph_dots[calc_kViewGraphDotsCount];
-  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
+  calc_dot graph_dots[calc_kGraphDotsCount];
+  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount);
   Color background_color_value = CLITERAL(Color){33, 33, 33, 33};
   int q = 0;  // used for quakes in meme mode
   int quake_counter = 0;
@@ -161,12 +160,12 @@ int main() {
             (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - (margin)) + q,
                         calc_kScreenHeight - margin * 4 + q, margin, margin},
             "=")) {
-      EqualsPressed(input_box_text, x_box_text, solver_box_text,
+      CommunicateWithLogicModel(input_box_text, x_box_text, solver_box_text,
                     output_box_text, &quake_counter, meme_mode, fx_wav,
                     graph_dots);
     }
     if (IsKeyPressed(KEY_ENTER)) {
-      EqualsPressed(input_box_text, x_box_text, solver_box_text,
+      CommunicateWithLogicModel(input_box_text, x_box_text, solver_box_text,
                     output_box_text, &quake_counter, meme_mode, fx_wav,
                     graph_dots);
     }
@@ -175,7 +174,7 @@ int main() {
         (Rectangle){0, calc_kScreenHeight - margin, calc_kScreenWidth, margin},
         "SmartCalc");
     // Draw whole graph:
-    for (int i = 0; i < calc_kViewGraphDotsCount; i++) {
+    for (int i = 0; i < calc_kGraphDotsCount; i++) {
       if (graph_dots[i].x != calc_kViewGraphUninit) {
         DrawPixel(
             (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
@@ -208,12 +207,12 @@ int main() {
   return 0;
 }
 
-void EqualsPressed(char* input_box_text, char* x_box_text,
+void CommunicateWithLogicModel(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
                    int meme_mode, Sound input_sound, calc_dot* graph_dots) {
   bool x_input_error = 0;
   char result_text[calc_kMaxStrSize] = {0};
-  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
+  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
   if (strcmp(x_box_text, calc_kXBoxDefaultText) != 0 &&

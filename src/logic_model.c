@@ -11,6 +11,7 @@ const int calc_kMaxSolverLoops = 5000;
 const long double calc_kInfinity =
     999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0L;
 const long double calc_kSolverMidDefault = 0.0000001;
+const long double calc_kGraphNumberOfDots = 100000;
 
 char *acos_str = "acos", *asin_str = "asin", *atan_str = "atan",
      *sqrt_str = "sqrt", *cos_str = "cos", *sin_str = "sin", *tan_str = "tan",
@@ -150,6 +151,32 @@ enum CalcErr Validation(const char *expression) {
     expression_error = calc_Err_kInvalidSymbols;
   }
   return expression_error;
+}
+
+void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view) {
+  long double step = 2000000.0L / calc_kGraphNumberOfDots;
+  long double current_value = -1000000.0L;
+  char local_expression[calc_kMaxStrSize] = {0},
+       current_value_str[calc_kMaxStrSize] = {0},
+       answer_str[calc_kMaxStrSize] = {0},
+       calc_input_local[calc_kMaxStrSize] = {0};
+  strcpy(calc_input_local, view_to_calc.calc_input);
+  bool invalid_input = false;
+  enum CalcErr expression_error = calc_Err_kOk;
+  int counter = 0;
+  do {
+    strcpy(local_expression, calc_input_local);
+    SprintfHelper(current_value_str, current_value);
+    ReplaceX(local_expression, current_value_str);
+    expression_error = Validation(local_expression);
+    if (!expression_error) {
+      TestCalculate(local_expression, answer_str);
+      calc_to_view.graph_dots[counter].x = current_value;
+      calc_to_view.graph_dots[counter].y = strtold(answer_str, NULL);
+    }
+    current_value += step;
+    ++counter;
+  } while (current_value < 1000000.1L);
 }
 
 // Main calculation:
@@ -554,17 +581,18 @@ void BinarySearchSolver(view_to_calc_struct view_to_calc,
   long double expected_answer = strtold(view_to_calc.solver_variable, NULL),
               answer_num = 0.0L;
   char local_expression[calc_kMaxStrSize] = {0},
-       answer_str[calc_kMaxStrSize] = {0}, mid_str[calc_kMaxStrSize] = {0};
+       answer_str[calc_kMaxStrSize] = {0}, mid_str[calc_kMaxStrSize] = {0},
+       calc_input_local[calc_kMaxStrSize] = {0};
+  strcpy(calc_input_local, view_to_calc.calc_input);
   long double top = (long double)(calc_kInfinity - 2.0L) / calc_kSolverMidDiv,
               mid = calc_kSolverMidDefault,
               bot = (long double)(-calc_kInfinity + 2.0L) / calc_kSolverMidDiv;
   int counter = 0, direction = 0;
   bool invalid_input = false;
-  strcpy(local_expression, view_to_calc.calc_input);
   enum CalcErr expression_error = calc_Err_kOk;
   do {
     ++counter;
-    strcpy(local_expression, view_to_calc.calc_input);
+    strcpy(local_expression, calc_input_local);
     SprintfHelper(mid_str, mid);
     ReplaceX(local_expression, mid_str);
     expression_error = Validation(local_expression);
@@ -605,8 +633,4 @@ void BinarySearchSolver(view_to_calc_struct view_to_calc,
   }
   sprintf(mid_str, "%.6Lf", mid);
   CalculatorOutput(mid_str, calc_to_view.answer, expression_error);
-}
-
-void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view) {
-
 }

@@ -9,6 +9,8 @@ void ControllerCommunicate(view_to_calc_struct view_to_calc,
     Calculate(view_to_calc, calc_to_view);
   } else if (view_to_calc.calculation_type == calc_kSolve) {
     BinarySearchSolver(view_to_calc, calc_to_view);
+  } else if (view_to_calc.calculation_type == calc_kGraph) {
+    Graph(view_to_calc, calc_to_view);
   }
 }
 

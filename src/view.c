@@ -15,9 +15,9 @@
 
 const long long int calc_kViewGraphUninit =
     -1527219354888013218690209950634698640695279350620336683.0;
-const int calc_kViewGraphDotsCount = 20000;
 const int calc_kScreenWidth = 1280;
 const int calc_kScreenHeight = 720;
+const int calc_kGraphDotsCount_local = calc_kGraphDotsCount;
 
 const char* calc_kXBoxDefaultText =
     "Write your x here, SHIFT + BACKSPACE to clear this field";
@@ -42,8 +42,8 @@ int main() {
   bool exit_window = false;
   bool show_message_box = false;
   bool meme_mode = CALC_MEME;
-  calc_dot graph_dots[calc_kViewGraphDotsCount];
-  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
+  calc_dot graph_dots[calc_kGraphDotsCount_local];
+  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount_local);
   Color background_color_value = CLITERAL(Color){33, 33, 33, 33};
   int q = 0;  // used for quakes in meme mode
   int quake_counter = 0;
@@ -52,15 +52,16 @@ int main() {
   GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
   InitAudioDevice();
   Sound fx_wav = LoadSound("a.wav");
-  char input_box_text[calc_kMaxStrSize] = {0},
-       x_box_text[calc_kMaxStrSize] = {0},
-       solver_box_text[calc_kMaxStrSize] = {0},
-       output_box_text[calc_kMaxStrSize] = {0};
-  // Copying default text to text fields
-  strcpy(input_box_text, calc_kInputBoxDefaultText);
-  strcpy(x_box_text, calc_kXBoxDefaultText);
-  strcpy(solver_box_text, calc_kSolverDefaultText);
-  strcpy(output_box_text, calc_kOutputDefaultText);
+  // Text box fields:
+  char input_box_field[calc_kMaxStrSize] = {0},
+       x_box_field[calc_kMaxStrSize] = {0},
+       solver_box_field[calc_kMaxStrSize] = {0},
+       output_box_field[calc_kMaxStrSize] = {0};
+  // Copying default text to text fields:
+  strcpy(input_box_field, calc_kInputBoxDefaultText);
+  strcpy(x_box_field, calc_kXBoxDefaultText);
+  strcpy(solver_box_field, calc_kSolverDefaultText);
+  strcpy(output_box_field, calc_kOutputDefaultText);
   // Text box edit modes:
   bool input_box_edit_mode = false;
   bool x_box_edit_mode = false;
@@ -74,18 +75,18 @@ int main() {
     }
     exit_window = WindowShouldClose();
     if (IsKeyPressed(KEY_ESCAPE)) show_message_box = !show_message_box;
-    if (IsKeyPressed(KEY_LEFT)) DeleteWordFromInput(input_box_text);
+    if (IsKeyPressed(KEY_LEFT)) DeleteWordFromInput(input_box_field);
     BeginDrawing();
     ClearBackground(background_color_value);
     // Ways of cleaning the input boxes fast:
     if (IsKeyDown(KEY_RIGHT_ALT) && IsKeyPressed(KEY_BACKSPACE)) {
-      strcpy(input_box_text, "\0");
+      strcpy(input_box_field, "\0");
     }
     if (IsKeyDown(KEY_RIGHT_SHIFT) && IsKeyPressed(KEY_BACKSPACE)) {
-      strcpy(x_box_text, "\0");
+      strcpy(x_box_field, "\0");
     }
     if (IsKeyDown(KEY_BACKSLASH) && IsKeyPressed(KEY_BACKSPACE)) {
-      strcpy(solver_box_text, "\0");
+      strcpy(solver_box_field, "\0");
     }
     const int margin = 40;
     // Decorative box:
@@ -101,7 +102,7 @@ int main() {
         calc_kScreenWidth - (calc_kScreenWidth * 0.30) - margin * 2;
     if (GuiTextBox((Rectangle){margin + q, calc_kScreenHeight - margin * 3 + q,
                                ui_input_wid_end, margin},
-                   input_box_text, calc_kMaxStrSize, input_box_edit_mode)) {
+                   input_box_field, calc_kMaxStrSize, input_box_edit_mode)) {
       input_box_edit_mode = !input_box_edit_mode;
     }
     // Output box:
@@ -110,20 +111,20 @@ int main() {
             ui_input_wid_end + margin + q, calc_kScreenHeight - margin * 3 + q,
             calc_kScreenWidth - (calc_kScreenWidth * 0.637) - margin * 2,
             margin},
-        output_box_text, calc_kMaxStrSize, false);
+        output_box_field, calc_kMaxStrSize, false);
     // X input:
     int x_input_wid_end = calc_kScreenWidth / 2 - margin * 2;
     if (GuiTextBox(
             (Rectangle){margin * 2 + q, calc_kScreenHeight - margin * 4 + q,
                         x_input_wid_end, margin},
-            x_box_text, calc_kMaxStrSize, x_box_edit_mode)) {
+            x_box_field, calc_kMaxStrSize, x_box_edit_mode)) {
       x_box_edit_mode = !x_box_edit_mode;
     }
     // Solver answer input:
     if (GuiTextBox((Rectangle){x_input_wid_end + margin * 2 + q,
                                calc_kScreenHeight - margin * 4 + q,
                                calc_kScreenWidth / 2 - margin, margin},
-                   solver_box_text, calc_kMaxStrSize, solver_box_edit_mode)) {
+                   solver_box_field, calc_kMaxStrSize, solver_box_edit_mode)) {
       solver_box_edit_mode = !solver_box_edit_mode;
     }
     // Clear button:
@@ -132,10 +133,10 @@ int main() {
                         calc_kScreenHeight - margin * 5.25 + q, margin * 2,
                         margin},
             "Clear")) {
-      strcpy(input_box_text, "\0");
-      strcpy(x_box_text, "\0");
-      strcpy(solver_box_text, "\0");
-      strcpy(output_box_text, "\0");
+      strcpy(input_box_field, "\0");
+      strcpy(x_box_field, "\0");
+      strcpy(solver_box_field, "\0");
+      strcpy(output_box_field, "\0");
     }
     // Grid for the graph:
     GuiGrid(
@@ -153,23 +154,30 @@ int main() {
         (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6 + q,
                     (float)calc_kScreenHeight / 2 - margin + q - 10, 0, 0},
         "x: -1000000", calc_kMaxStrSize, false);
-    // Calculate logic:
+    // Calculate logic and equals button:
     GuiSetState(STATE_NORMAL);
     if (GuiButton(
             (Rectangle){calc_kScreenWidth - (calc_kScreenWidth - (margin)) + q,
                         calc_kScreenHeight - margin * 4 + q, margin, margin},
             "=") ||
         IsKeyPressed(KEY_ENTER)) {
-      EqualsPressed(input_box_text, x_box_text, solver_box_text,
-                    output_box_text, &quake_counter, meme_mode, fx_wav,
-                    graph_dots);
+      CommunicateWithLogicModel(input_box_field, x_box_field, solver_box_field,
+                                output_box_field, &quake_counter, meme_mode,
+                                fx_wav, graph_dots);
+    }
+    // Graph button:
+    if (GuiButton(
+            (Rectangle){
+                calc_kScreenWidth - (calc_kScreenWidth - margin * 3.25) + q,
+                calc_kScreenHeight - margin * 5.25 + q, margin * 2, margin},
+            "Graph")) {
     }
     // Status bar:
     GuiStatusBar(
         (Rectangle){0, calc_kScreenHeight - margin, calc_kScreenWidth, margin},
         "SmartCalc");
     // Draw whole graph:
-    for (int i = 0; i < calc_kViewGraphDotsCount; ++i) {
+    for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
       if (graph_dots[i].x != calc_kViewGraphUninit) {
         DrawPixel(
             (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
@@ -202,11 +210,12 @@ int main() {
   return 0;
 }
 
-void EqualsPressed(char* input_box_text, char* x_box_text,
-                   char* solver_box_text, char* output_text, int* quake_counter,
-                   int meme_mode, Sound input_sound, calc_dot* graph_dots) {
+void CommunicateWithLogicModel(char* input_box_text, char* x_box_text,
+                               char* solver_box_text, char* output_text,
+                               int* quake_counter, int meme_mode,
+                               Sound input_sound, calc_dot* graph_dots) {
   char result_text[calc_kMaxStrSize] = {0};
-  ClearCalcDotArray(graph_dots, calc_kViewGraphDotsCount);
+  ClearCalcDotArray(graph_dots, calc_kGraphDotsCount_local);
   view_to_calc_struct view_to_calc;
   calc_to_view_struct calc_to_view;
   view_to_calc.calculation_type = calc_kNoCalculation;
@@ -214,6 +223,8 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
   view_to_calc.x_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
   view_to_calc.solver_variable = (char*)calloc(calc_kMaxStrSize, sizeof(char));
   calc_to_view.answer = (char*)calloc(calc_kMaxStrSize, sizeof(char));
+  calc_to_view.graph_dots =
+      (calc_dot*)calloc(calc_kGraphDotsCount_local, sizeof(calc_dot));
   if (strcmp(x_box_text, calc_kXBoxDefaultText) != 0 && strlen(x_box_text) &&
       strpbrk(input_box_text, "Xx") && !strpbrk(x_box_text, "Xx")) {
     view_to_calc.calculation_type = calc_kCalculateWithX;
@@ -233,7 +244,6 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
     strcpy(view_to_calc.x_variable, x_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_text, calc_to_view.answer);
-    // ADD GRAPH DRAWING HERE LATER
   } else if (view_to_calc.calculation_type == calc_kSolve) {
     strcpy(view_to_calc.calc_input, input_box_text);
     strcpy(view_to_calc.solver_variable, solver_box_text);
@@ -250,6 +260,7 @@ void EqualsPressed(char* input_box_text, char* x_box_text,
   if (view_to_calc.x_variable) free(view_to_calc.x_variable);
   if (view_to_calc.solver_variable) free(view_to_calc.solver_variable);
   if (calc_to_view.answer) free(calc_to_view.answer);
+  if (calc_to_view.graph_dots) free(calc_to_view.graph_dots);
   ControllerUnlockCalculate();
 }
 
@@ -285,5 +296,12 @@ void DeleteWordFromInput(char* input_str) {
         --i;
       }
     }
+  }
+}
+
+void CopyDotsToLocal(calc_dot* to, calc_dot* from) {
+  for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
+    to->x = from->x;
+    to->y = from->y;
   }
 }

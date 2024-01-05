@@ -10,8 +10,11 @@
 
 void DeleteWordFromInput(char* inputStr);
 void ClearCalcDotArray(calc_dot* input, int elements);
-void EqualsPressed(char* input_box_text, char* x_box_text,
+void CommunicateWithLogicModel(char* input_box_text, char* x_box_text,
                    char* solver_box_text, char* output_text, int* quake_counter,
                    int meme_mode, Sound input_sound, calc_dot* graph_dots);
 void SoundAndMemeLogic(bool meme_mode, Sound input_sound, int* quake_counter);
+
+void CopyDotsToLocal(calc_dot* to, calc_dot* from);
+
 #endif  // CALC_VIEW_H_

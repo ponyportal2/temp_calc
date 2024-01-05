@@ -3,12 +3,14 @@
 #include <stdbool.h>
 
 #define calc_kMaxStrSize 16384
+#define calc_kGraphDotsCount 20000;
 
 enum CalculationType {
   calc_kNoCalculation = 0,
   calc_kCalculate,
   calc_kCalculateWithX,
-  calc_kSolve
+  calc_kSolve,
+  calc_kGraph
 };
 
 typedef struct calc_dot_t {
@@ -26,7 +28,7 @@ typedef struct view_to_calc_struct_t {
 
 typedef struct calc_to_view_struct_t {
   char* answer;
-  calc_dot* logic_model_graph_dots;
+  calc_dot* graph_dots;
 } calc_to_view_struct;
 
 void ControllerCommunicate(view_to_calc_struct view_to_calc,

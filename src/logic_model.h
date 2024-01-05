@@ -49,6 +49,7 @@ enum CalcErr UnfoldHelper(long double (*fun)(long double), char *left,
                           char *oper_str);
 void BinarySearchSolver(view_to_calc_struct view_to_calc,
                         calc_to_view_struct calc_to_view);
+void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view);
 void linearSolver(char *expression, long double expectedAnswer);
 void ReplaceX(char *input_str, const char *input_x);
 void addMultSignsToBrackets(char *inputStr);
