@@ -188,11 +188,11 @@ int main() {
         //     (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
         //     (long double)calc_kScreenHeight / 2 + (graph_dots[i].y *
         //     0.00015), RED);
-        DrawPixel(
-            (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
-            (long double)calc_kScreenHeight / 2 - 30 -
-                (graph_dots[i].y * 0.00015),
-            RED);
+        DrawPixel((long double)calc_kScreenWidth / 2 +
+                      (graph_dots[i].x * 0.00015) - 9,
+                  (long double)calc_kScreenHeight / 2 -
+                      (graph_dots[i].y * 0.00015) - 50,
+                  RED);
       }
     }
     // Exit logic:
