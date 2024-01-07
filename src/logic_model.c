@@ -11,7 +11,7 @@ const int calc_kMaxSolverLoops = 5000;
 const long double calc_kInfinity =
     999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0L;
 const long double calc_kSolverMidDefault = 0.0000001;
-const long double calc_kGraphNumberOfDots = 100000;
+const long double calc_kGraphDotsCount_local = calc_kGraphDotsCount;
 
 char *acos_str = "acos", *asin_str = "asin", *atan_str = "atan",
      *sqrt_str = "sqrt", *cos_str = "cos", *sin_str = "sin", *tan_str = "tan",
@@ -154,29 +154,32 @@ enum CalcErr Validation(const char *expression) {
 }
 
 void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view) {
-  long double step = 2000000.0L / calc_kGraphNumberOfDots;
-  long double current_value = -1000000.0L;
+  long double step = 2000000.0L / calc_kGraphDotsCount_local,
+              current_x_value = -1000000.0L;
   char local_expression[calc_kMaxStrSize] = {0},
        current_value_str[calc_kMaxStrSize] = {0},
        answer_str[calc_kMaxStrSize] = {0},
        calc_input_local[calc_kMaxStrSize] = {0};
   strcpy(calc_input_local, view_to_calc.calc_input);
-  bool invalid_input = false;
   enum CalcErr expression_error = calc_Err_kOk;
   int counter = 0;
   do {
     strcpy(local_expression, calc_input_local);
-    SprintfHelper(current_value_str, current_value);
+    SprintfHelper(current_value_str, current_x_value);
     ReplaceX(local_expression, current_value_str);
     expression_error = Validation(local_expression);
     if (!expression_error) {
       TestCalculate(local_expression, answer_str);
-      calc_to_view.graph_dots[counter].x = current_value;
-      calc_to_view.graph_dots[counter].y = strtold(answer_str, NULL);
+      long double answer_value = strtold(answer_str, NULL);
+      if ((current_x_value < 1000001 && answer_value <= 1000001) &&
+          (current_x_value > -1000001 && answer_value > -1000001)) {
+        calc_to_view.graph_dots[counter].x = current_x_value;
+        calc_to_view.graph_dots[counter].y = strtold(answer_str, NULL);
+      }
     }
-    current_value += step;
+    current_x_value += step;
     ++counter;
-  } while (current_value < 1000000.1L);
+  } while (counter < calc_kGraphDotsCount_local);
 }
 
 // Main calculation:
@@ -186,6 +189,7 @@ void Calculate(view_to_calc_struct view_to_calc,
   int with_output = CALC_WITH_OUTPUT;
   if (view_to_calc.unlock == true) locked = false;
   if (view_to_calc.unlock == false && locked == false) {
+    printf("\n5fsdfsdf\n");
     locked = true;
     if (view_to_calc.calculation_type == calc_kCalculateWithX) {
       ReplaceX(view_to_calc.calc_input, view_to_calc.x_variable);
