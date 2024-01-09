@@ -171,8 +171,8 @@ void Graph(view_to_calc_struct view_to_calc, calc_to_view_struct calc_to_view) {
     if (!expression_error) {
       TestCalculate(local_expression, answer_str);
       long double answer_value = strtold(answer_str, NULL);
-      if ((current_x_value < 1000001 && answer_value <= 1000001) &&
-          (current_x_value > -1000001 && answer_value > -1000001)) {
+      if ((current_x_value < 1000000.1 && answer_value < 1000000.1) &&
+          (current_x_value > -1000000.1 && answer_value > -1000000.1)) {
         calc_to_view.graph_dots[counter].x = current_x_value;
         calc_to_view.graph_dots[counter].y = strtold(answer_str, NULL);
       }
@@ -189,7 +189,6 @@ void Calculate(view_to_calc_struct view_to_calc,
   int with_output = CALC_WITH_OUTPUT;
   if (view_to_calc.unlock == true) locked = false;
   if (view_to_calc.unlock == false && locked == false) {
-    printf("\n5fsdfsdf\n");
     locked = true;
     if (view_to_calc.calculation_type == calc_kCalculateWithX) {
       ReplaceX(view_to_calc.calc_input, view_to_calc.x_variable);

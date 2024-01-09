@@ -29,12 +29,6 @@ const char* calc_kSolverDefaultText =
     "field";
 const char* calc_kOutputDefaultText = "Output will be here";
 
-typedef struct calc_pixel_t {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-} calc_pixel;
-
 int main() {
   srand(time(NULL));
   InitWindow(calc_kScreenWidth, calc_kScreenHeight, "SmartCalc");
@@ -57,16 +51,33 @@ int main() {
   char input_box_field[calc_kMaxStrSize] = {0},
        x_box_field[calc_kMaxStrSize] = {0},
        solver_box_field[calc_kMaxStrSize] = {0},
-       output_box_field[calc_kMaxStrSize] = {0};
+       output_box_field[calc_kMaxStrSize] = {0},
+       x_zoom_text[calc_kMaxStrSize] = {0}, y_zoom_text[calc_kMaxStrSize] = {0};
   // Copying default text to text fields:
   strcpy(input_box_field, calc_kInputBoxDefaultText);
   strcpy(x_box_field, calc_kXBoxDefaultText);
   strcpy(solver_box_field, calc_kSolverDefaultText);
   strcpy(output_box_field, calc_kOutputDefaultText);
+  strcpy(x_zoom_text, "-1000000");
+  strcpy(y_zoom_text, "1000000");
+  int zoom_multiplier = 1;
   // Text box edit modes:
   bool input_box_edit_mode = false;
   bool x_box_edit_mode = false;
   bool solver_box_edit_mode = false;
+  // Limit box fields:
+  char x_axis_lower_limit_box_field[calc_kMaxStrSize] = {0},
+       y_axis_lower_limit_box_field[calc_kMaxStrSize] = {0},
+       x_axis_higher_limit_box_field[calc_kMaxStrSize] = {0},
+       y_axis_higher_limit_box_field[calc_kMaxStrSize] = {0};
+  strcpy(x_axis_lower_limit_box_field, "-1000000");
+  strcpy(y_axis_lower_limit_box_field, "-1000000");
+  strcpy(x_axis_higher_limit_box_field, "1000000");
+  strcpy(y_axis_higher_limit_box_field, "1000000");
+  bool x_axis_lower_limit_box_edit_mode = false;
+  bool y_axis_lower_limit_box_edit_mode = false;
+  bool x_axis_higher_limit_box_edit_mode = false;
+  bool y_axis_higher_limit_box_edit_mode = false;
 
   // MAIN LOOP:
   while (!exit_window) {  // Will detect window close button or ESC
@@ -89,6 +100,22 @@ int main() {
     if (IsKeyDown(KEY_BACKSLASH) && IsKeyPressed(KEY_BACKSPACE)) {
       strcpy(solver_box_field, "\0");
     }
+    // Zoom in and zoom out:
+    if (IsKeyDown(KEY_RIGHT_ALT) && IsKeyPressed(KEY_EQUAL)) {
+      zoom_multiplier *= 10;
+      if (zoom_multiplier > 100) zoom_multiplier = 100;
+      sprintf(x_zoom_text, "%.0Lf",
+              (long double)1000000 / zoom_multiplier * -1);
+      sprintf(y_zoom_text, "%.0Lf", (long double)1000000 / zoom_multiplier);
+    }
+    if (IsKeyDown(KEY_RIGHT_ALT) && IsKeyPressed(KEY_MINUS)) {
+      zoom_multiplier /= 10;
+      if (zoom_multiplier < 1) zoom_multiplier = 1;
+      sprintf(x_zoom_text, "%.0Lf",
+              (long double)1000000 / zoom_multiplier * -1);
+      sprintf(y_zoom_text, "%.0Lf", (long double)1000000 / zoom_multiplier);
+    }
+    // Margin (used everywhere):
     const int margin = 40;
     // Decorative box:
     GuiGroupBox(
@@ -139,22 +166,76 @@ int main() {
       strcpy(solver_box_field, "\0");
       strcpy(output_box_field, "\0");
     }
-    // Grid for the graph:
-    GuiGrid(
-        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 4 + q,
-                    (float)calc_kScreenHeight / 2 - margin * 5 + q, 300, 300},
-        "Grid for the graph", 50, 4);
+    // Limits:
+    // ----------
+    // X lower limit:
+    GuiTextBox(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6.25 + q,
+                    (float)calc_kScreenHeight / 2 - margin * 3.25 + q - 10, 0,
+                    0},
+        "X Lower Limit", calc_kMaxStrSize, false);
+    if (GuiTextBox(
+            (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6 + q,
+                        (float)calc_kScreenHeight / 2 - margin * 3 + q - 10,
+                        margin * 1.9, margin * 0.5},
+            x_axis_lower_limit_box_field, calc_kMaxStrSize,
+            x_axis_lower_limit_box_edit_mode)) {
+      x_axis_lower_limit_box_edit_mode = !x_axis_lower_limit_box_edit_mode;
+    }
+    // X higher limit:
+    GuiTextBox(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6.35 + q,
+                    (float)calc_kScreenHeight / 2 - margin * 2.25 + q - 10, 0,
+                    0},
+        "X Higher Limit", calc_kMaxStrSize, false);
+    if (GuiTextBox(
+            (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6 + q,
+                        (float)calc_kScreenHeight / 2 - margin * 2 + q - 10,
+                        margin * 1.9, margin * 0.5},
+            x_axis_higher_limit_box_field, calc_kMaxStrSize,
+            x_axis_higher_limit_box_edit_mode)) {
+      x_axis_higher_limit_box_edit_mode = !x_axis_higher_limit_box_edit_mode;
+    }
+    // Y lower limit:
+    int ylm = 20;  // Y limits margin;
+    GuiTextBox(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
+                    (float)calc_kScreenHeight / 2 - margin * 8 + q + ylm, 0, 0},
+        "Y Lower Limit", calc_kMaxStrSize, false);
+    if (GuiTextBox(
+            (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
+                        (float)calc_kScreenHeight / 2 - margin * 7.75 + q + ylm,
+                        margin * 1.9, margin * 0.5},
+            y_axis_lower_limit_box_field, calc_kMaxStrSize,
+            y_axis_lower_limit_box_edit_mode)) {
+      y_axis_lower_limit_box_edit_mode = !y_axis_lower_limit_box_edit_mode;
+    }
+    // Y higher limit:
+    GuiTextBox(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
+                    (float)calc_kScreenHeight / 2 - margin * 7 + q + ylm, 0, 0},
+        "Y Higher Limit", calc_kMaxStrSize, false);
+    if (GuiTextBox(
+            (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
+                        (float)calc_kScreenHeight / 2 - margin * 6.75 + q + ylm,
+                        margin * 1.9, margin * 0.5},
+            y_axis_higher_limit_box_field, calc_kMaxStrSize,
+            y_axis_higher_limit_box_edit_mode)) {
+      y_axis_higher_limit_box_edit_mode = !y_axis_higher_limit_box_edit_mode;
+    }
+    // Limits end
+    // ----------
+    // X scale label:
+    GuiTextBox(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 5.65 + q,
+                    (float)calc_kScreenHeight / 2 - margin + q - 10, 0, 0},
+        x_zoom_text, calc_kMaxStrSize, false);
     // Y scale label:
     GuiSetState(STATE_FOCUSED);
     GuiTextBox(
         (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                     (float)calc_kScreenHeight / 2 - margin * 6 + q + 30, 0, 0},
-        "y: 1000000", calc_kMaxStrSize, false);
-    // X scale label:
-    GuiTextBox(
-        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 6 + q,
-                    (float)calc_kScreenHeight / 2 - margin + q - 10, 0, 0},
-        "x: -1000000", calc_kMaxStrSize, false);
+        y_zoom_text, calc_kMaxStrSize, false);
     // Calculate logic and equals button:
     GuiSetState(STATE_NORMAL);
     if (GuiButton(
@@ -166,6 +247,11 @@ int main() {
                                 output_box_field, &quake_counter, meme_mode,
                                 fx_wav, graph_dots);
     }
+    // Grid for the graph:
+    GuiGrid(
+        (Rectangle){(float)calc_kScreenWidth / 2 - margin * 4 + q,
+                    (float)calc_kScreenHeight / 2 - margin * 5 + q, 300, 300},
+        "Grid for the graph", 50, 4);
     // Graph button:
     if (GuiButton(
             (Rectangle){
@@ -177,24 +263,31 @@ int main() {
                                 output_box_field, &quake_counter, meme_mode,
                                 fx_wav, graph_dots);
     }
+    // Draw whole graph:
+    for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
+      if (graph_dots[i].x != calc_kViewGraphUninit) {
+        long double y_upper = strtold(y_axis_higher_limit_box_field, NULL);
+        long double x_upper = strtold(x_axis_higher_limit_box_field, NULL);
+        long double y_lower = strtold(y_axis_lower_limit_box_field, NULL);
+        long double x_lower = strtold(x_axis_lower_limit_box_field, NULL);
+        if ((graph_dots[i].x > x_lower && graph_dots[i].x < x_upper) &&
+            (graph_dots[i].y > y_lower && graph_dots[i].y < y_upper) &&
+            (graph_dots[i].x > -1000000 / zoom_multiplier &&
+             graph_dots[i].x < 1000000 / zoom_multiplier) &&
+            (graph_dots[i].y > -1000000 / zoom_multiplier &&
+             graph_dots[i].y < 1000000 / zoom_multiplier)) {
+          DrawPixel((long double)calc_kScreenWidth / 2 +
+                        (graph_dots[i].x * 0.00015 * zoom_multiplier) - 9,
+                    (long double)calc_kScreenHeight / 2 -
+                        (graph_dots[i].y * 0.00015 * zoom_multiplier) - 50,
+                    RED);
+        }
+      }
+    }
     // Status bar:
     GuiStatusBar(
         (Rectangle){0, calc_kScreenHeight - margin, calc_kScreenWidth, margin},
         "SmartCalc");
-    // Draw whole graph:
-    for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
-      if (graph_dots[i].x != calc_kViewGraphUninit) {
-        // DrawPixel(
-        //     (long double)calc_kScreenWidth / 2 + (graph_dots[i].x * 0.00015),
-        //     (long double)calc_kScreenHeight / 2 + (graph_dots[i].y *
-        //     0.00015), RED);
-        DrawPixel((long double)calc_kScreenWidth / 2 +
-                      (graph_dots[i].x * 0.00015) - 9,
-                  (long double)calc_kScreenHeight / 2 -
-                      (graph_dots[i].y * 0.00015) - 50,
-                  RED);
-      }
-    }
     // Exit logic:
     if (show_message_box) {
       DrawRectangle(0, 0, calc_kScreenWidth, calc_kScreenHeight,
@@ -258,12 +351,9 @@ void CommunicateWithLogicModel(char* input_box_text, char* x_box_text,
       strcpy(output_box_text, "X variable is required for graph calculation");
     }
   } else if (view_to_calc.calculation_type == calc_kCalculate) {
-    printf("\n1fsdfsdfds\n");
     strcpy(view_to_calc.calc_input, input_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
     strcpy(output_box_text, calc_to_view.answer);
-  } else if (view_to_calc.calculation_type == calc_kCalculateWithX) {
-    printf("\n2fsdfsdfds\n");
     strcpy(view_to_calc.calc_input, input_box_text);
     strcpy(view_to_calc.x_variable, x_box_text);
     ControllerCommunicate(view_to_calc, calc_to_view);
@@ -327,12 +417,5 @@ void CopyDotsToLocal(calc_dot* to, calc_dot* from) {
   for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
     to[i].x = from[i].x;
     to[i].y = from[i].y;
-  }
-}
-
-void PrintDotArray(calc_dot* input) {
-  for (int i = 0; i < calc_kGraphDotsCount_local; ++i) {
-    printf("\n%Lf\n", input[i].x);
-    printf("%Lf\n", input[i].y);
   }
 }
