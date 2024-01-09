@@ -196,32 +196,32 @@ int main() {
             x_axis_higher_limit_box_edit_mode)) {
       x_axis_higher_limit_box_edit_mode = !x_axis_higher_limit_box_edit_mode;
     }
-    // Y lower limit:
     int ylm = 20;  // Y limits margin;
+    // Y higher limit:
     GuiTextBox(
         (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                     (float)calc_kScreenHeight / 2 - margin * 8 + q + ylm, 0, 0},
-        "Y Lower Limit", calc_kMaxStrSize, false);
+        "Y Higher Limit", calc_kMaxStrSize, false);
     if (GuiTextBox(
             (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                         (float)calc_kScreenHeight / 2 - margin * 7.75 + q + ylm,
                         margin * 1.9, margin * 0.5},
-            y_axis_lower_limit_box_field, calc_kMaxStrSize,
-            y_axis_lower_limit_box_edit_mode)) {
-      y_axis_lower_limit_box_edit_mode = !y_axis_lower_limit_box_edit_mode;
+            y_axis_higher_limit_box_field, calc_kMaxStrSize,
+            y_axis_higher_limit_box_edit_mode)) {
+      y_axis_higher_limit_box_edit_mode = !y_axis_higher_limit_box_edit_mode;
     }
-    // Y higher limit:
+    // Y lower limit:
     GuiTextBox(
         (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                     (float)calc_kScreenHeight / 2 - margin * 7 + q + ylm, 0, 0},
-        "Y Higher Limit", calc_kMaxStrSize, false);
+        "Y Lower Limit", calc_kMaxStrSize, false);
     if (GuiTextBox(
             (Rectangle){(float)calc_kScreenWidth / 2 - margin + q,
                         (float)calc_kScreenHeight / 2 - margin * 6.75 + q + ylm,
                         margin * 1.9, margin * 0.5},
-            y_axis_higher_limit_box_field, calc_kMaxStrSize,
-            y_axis_higher_limit_box_edit_mode)) {
-      y_axis_higher_limit_box_edit_mode = !y_axis_higher_limit_box_edit_mode;
+            y_axis_lower_limit_box_field, calc_kMaxStrSize,
+            y_axis_lower_limit_box_edit_mode)) {
+      y_axis_lower_limit_box_edit_mode = !y_axis_lower_limit_box_edit_mode;
     }
     // Limits end
     // ----------
