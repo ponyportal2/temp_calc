@@ -2,38 +2,22 @@
 #define CALC_CONTROLLER_H_
 #include <stdbool.h>
 
-#define calc_kMaxStrSize 16384
-#define calc_kGraphDotsCount 20000;
+#include "controller_constants.h"
+#include "logic_model.h"
 
-enum CalculationType {
-  calc_kNoCalculation = 0,
-  calc_kCalculate,
-  calc_kCalculateWithX,
-  calc_kSolve,
-  calc_kGraph
+namespace s21 {
+class S21Controller {
+ public:
+  // Public methods:
+  void ControllerCommunicate(
+      S21ControllerConstants::view_to_calc_struct view_to_calc,
+      S21ControllerConstants::calc_to_view_struct calc_to_view);
+
+  void ControllerUnlockCalculate();
+
+ private:
+  s21::S21LogicModel the_model;
 };
 
-typedef struct calc_dot_t {
-  long double x;
-  long double y;
-} calc_dot;
-
-typedef struct view_to_calc_struct_t {
-  char* x_variable;
-  char* solver_variable;
-  char* calc_input;
-  enum CalculationType calculation_type;
-  bool unlock;
-} view_to_calc_struct;
-
-typedef struct calc_to_view_struct_t {
-  char* answer;
-  calc_dot* graph_dots;
-} calc_to_view_struct;
-
-void ControllerCommunicate(view_to_calc_struct view_to_calc,
-                           calc_to_view_struct calc_to_view);
-
-void ControllerUnlockCalculate();
-
+}  // namespace s21
 #endif  // CALC_CONTROLLER_H_

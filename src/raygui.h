@@ -1,3 +1,5 @@
+#ifndef CALC_RAYGUI_H_
+#define CALC_RAYGUI_H_
 /*******************************************************************************************
  *
  *   raygui v3.2 - A simple and easy-to-use immediate-mode gui library
@@ -5529,5 +5531,5 @@ static int GetCodepoint(const char *text, int *bytesProcessed) {
   return code;
 }
 #endif  // RAYGUI_STANDALONE
-
 #endif  // RAYGUI_IMPLEMENTATION
+#endif  // CALC_RAYGUI_H_

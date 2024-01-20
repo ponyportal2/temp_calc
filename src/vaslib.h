@@ -4,8 +4,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+namespace vaslib {
 
-#define vas_kMaxStringSize 16384
+static constexpr int vas_kMaxStringSize = 16384;
 
 void VasCpy(char *input, const int position, const char *what_to_copy);
 int VasInsert(char *input, int const position, const char *what_to_copy);
@@ -16,5 +17,5 @@ void VasClearCharArray(char *input_str, int array_size);
 int VasCountOfChars(const char *input_str, const char *to_find);
 void VasReverseCharArray(char *string);
 void VasCleanUpTrailingZeroes(char *input_str);
-
+}  // namespace vaslib
 #endif  // VAS_VASLIB_H_

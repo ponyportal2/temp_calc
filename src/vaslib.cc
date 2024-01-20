@@ -1,7 +1,9 @@
 #include "vaslib.h"
 
+namespace vaslib {
+
 void VasCpy(char *input, const int position, const char *what_to_copy) {
-  for (int i = 0; i < strlen(what_to_copy); ++i) {
+  for (int i = 0; i < (int)strlen(what_to_copy); ++i) {
     input[position + i] = what_to_copy[i];
   }
 }
@@ -9,7 +11,7 @@ void VasCpy(char *input, const int position, const char *what_to_copy) {
 int VasInsert(char *input, int const position, const char *what_to_copy) {
   int valid = 0;
   char temp_input[vas_kMaxStringSize] = {0};
-  if (position <= strlen(input) && position > -1) {
+  if (position <= (int)strlen(input) && position > -1) {
     valid = 1;
     char left[vas_kMaxStringSize] = {0};
     char right[vas_kMaxStringSize] = {0};
@@ -26,7 +28,7 @@ int VasInsert(char *input, int const position, const char *what_to_copy) {
 void VasReplace(char *input, const char *what_to_find, const char *to_replace) {
   int what_to_find_len = strlen(what_to_find);
   char temp_str[vas_kMaxStringSize] = {0};
-  for (int i = 0; i < strlen(input); ++i) {
+  for (int i = 0; i < (int)strlen(input); ++i) {
     strncpy(temp_str, input + i, what_to_find_len);
     if (!strcmp(temp_str, what_to_find)) {
       VasCpy(input, i, to_replace);
@@ -90,7 +92,4 @@ void VasCleanUpTrailingZeroes(char *input_str) {
     }
   }
 }
-
-void VasClearCharArray(char *input_str, int array_size) {
-  for (int i = 0; i < array_size; ++i) input_str[i] = '\0';
-}
+}  // namespace vaslib

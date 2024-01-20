@@ -1,3 +1,6 @@
+#ifndef CALC_STYLE_DARK_H_
+#define CALC_STYLE_DARK_H_
+
 //////////////////////////////////////////////////////////////////////////////////
 //                                                                              //
 // StyleAsCode exporter v1.2 - Style data exported as a values array //
@@ -248,3 +251,4 @@ static void GuiLoadStyleDark(void) {
   // TODO: Custom user style setup: Set specific properties here (if required)
   // i.e. Controls specific BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
 }
+#endif  // CALC_STYLE_DARK_H_

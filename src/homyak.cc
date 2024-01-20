@@ -1,3 +1,16 @@
+
+// if (!strcmp(calc_to_view.answer, "0.0") ||
+//     !strcmp(calc_to_view.answer, "-0.0")) {
+//   strcat(params->output_box_text, "0 or Error");
+// } else {
+
+// ---
+// void VasClearCharArray(char *input_str, int array_size) {
+//   for (int i = 0; i < array_size; ++i) input_str[i] = '\0';
+// }
+
+// ---------------------
+
 // int OperCount(char *input) { return VasCountOfChars(input, "^/*%-+"); }
 
 // bool IsJustANumber(char *input_str) {

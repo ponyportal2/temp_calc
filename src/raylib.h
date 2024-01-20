@@ -1,3 +1,5 @@
+#ifndef CALC_RAYLIB_H_
+#define CALC_RAYLIB_H_
 /**********************************************************************************************
  *
  *   raylib v4.2 - A simple and easy-to-use library to enjoy videogames
@@ -2327,3 +2329,4 @@ RLAPI void DetachAudioStreamProcessor(
 #endif
 
 #endif  // RAYLIB_H
+#endif  // CALC_RAYLIB_H_
